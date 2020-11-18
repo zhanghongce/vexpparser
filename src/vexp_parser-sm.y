@@ -66,6 +66,9 @@ expression :
 | unary_operator attribute_instances primary{
     $$ = ast_new_unary_expression($3,$1,$2, AST_FALSE);
   }
+| expression AT  attribute_instances expression{
+    // this is the A@B shortcut
+  }
 | expression PLUS  attribute_instances expression{
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
@@ -169,6 +172,7 @@ primary :
       $$ = ast_new_primary_function_call($1);
   }
 | hierarchical_identifier sq_bracket_expressions{
+    // call the index operator here
       $$ = ast_new_primary(PRIMARY_IDENTIFIER);
       $$ -> value.identifier = $1;
   }
@@ -185,8 +189,19 @@ primary :
       $$ -> value.identifier = $1;
   }
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
+   // this is also the sub-()
       $$ = ast_new_primary(PRIMARY_MINMAX_EXP);
       $$ -> value.minmax = $2;
+  }
+;
+
+
+hierarchical_identifier_special_name :
+  hierarchical_identifier {
+    // this is the place you place the thing
+  }
+| HASH SIMPLE_ID HASH {
+  
   }
 ;
 
@@ -213,7 +228,7 @@ concatenation_cont :
 multiple_concatenation :
   OPEN_SQ_BRACE expression concatenation CLOSE_SQ_BRACE{
     $$ = $3;
-    $$ -> repeat = $2;
+    $$ -> repeat = $2; // you need to change this to use REPEAT operator // check here to be constant?
   }
 ;
 
