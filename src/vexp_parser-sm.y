@@ -4,7 +4,7 @@
 %locations
 %define api.value.type variant
 %define api.token.constructor
-
+%define api.token.prefix {TOK_}
 
 /* Operators Precedence */
 
@@ -37,6 +37,38 @@
 %token <voperator> B_NAND  
 %token <voperator> B_NOR   
 %token <voperator> TERNARY 
+%token <voperator> AT 
+
+%token OPEN_BRACKET
+%token CLOSE_BRACKET
+%token HASH
+%token OPEN_SQ_BRACE
+%token CLOSE_SQ_BRACE
+%token COMMA
+%token COLON
+%token BIN_BASE 
+%token HEX_BASE 
+%token OCT_BASE
+%token DEC_BASE 
+%token IDX_PRT_SEL
+%token ATTRIBUTE_START
+%token ATTRIBUTE_END
+%token EQ
+%token DOT
+%token SPACE
+%token TAB
+%token NEWLINE
+
+%token <std::string> SIMPLE_ID
+%token <std::string> ESCAPED_ID
+%token <std::string> MACRO_IDENTIFIER
+%token <std::string> NUM_REAL
+%token <std::string> BIN_VALUE
+%token <std::string> HEX_VALUE
+%token <std::string> OCT_VALUE
+%token <std::string> UNSIGNED_NUMBER
+%token <std::string> STRING
+
 
 /* Operator Precedence */
 
@@ -53,7 +85,8 @@
 %left   PLUS MINUS
 %left   STAR DIV MOD
 %left   POW
-%right  L_NEG B_NEG    /* Highest Precedence. */
+%left   AT
+%right  L_NEG B_NEG            /* Highest Precedence. */
 
 
 
@@ -444,22 +477,3 @@ unary_operator : PLUS    {$$ = $1;}
                ;
 
 
-unary_module_path_operator  : L_NEG  {$$=$1;}
-                            | B_NEG  {$$=$1;}
-                            | B_AND  {$$=$1;}
-                            | B_NAND {$$=$1;}
-                            | B_OR   {$$=$1;}
-                            | B_NOR  {$$=$1;}
-                            | B_XOR  {$$=$1;}
-                            | B_EQU  {$$=$1;}
-                            ;
-
-binary_module_path_operator : L_EQ   {$$=$1;}
-                            | L_NEQ  {$$=$1;}
-                            | L_AND  {$$=$1;}
-                            | L_OR   {$$=$1;}
-                            | B_AND  {$$=$1;}
-                            | B_OR   {$$=$1;}                    
-                            | B_XOR  {$$=$1;}                    
-                            | B_EQU  {$$=$1;}
-                            ;

@@ -1,22 +1,14 @@
 %{
-#include <verilogparser/verilog_ast.h>
-    #include "verilog_parser.tab.h"
-    
-#include <verilogparser/verilog_preprocessor.h>
-
-    //! Stores all information needed for the preprocessor.
-    verilog_preprocessor_context * yy_preproc;
-
-    #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
-                          if(yy_preproc -> emit) {      \
-                              return x;                 \
-                          }
+# include <cerrno>
+# include <climits>
+# include <cstdlib>
+# include <cstring> // strerror
+# include <string>
+# include "driver.hh"
+# include "parser.hh"
 %}
 
-%option yylineno
-%option nodefault 
-%option noyywrap 
-%option nounistd
+%option noyywrap nounput noinput batch debug nounistd
 
 /* Single character tokens */
 
@@ -134,97 +126,104 @@ B_NAND              "~&"
 B_NOR               "~|"
 TERNARY             "?"
 
-%%
-{ATTRIBUTE_START}      {EMIT_TOKEN(ATTRIBUTE_START);}
-{ATTRIBUTE_END}        {EMIT_TOKEN(ATTRIBUTE_END);}
+%{
+  // Code run each time a pattern is matched.
+  # define YY_USER_ACTION  loc.columns (yyleng);
+%}
 
-{COMMENT_LINE}         {/*EMIT_TOKEN(COMMENT_LINE); IGNORE */}
+%%
+
+%{
+  // A handy shortcut to the location held by the driver.
+  yy::location& loc = drv.location;
+  // Code run each time yylex is called.
+  loc.step ();
+%}
+
+{ATTRIBUTE_START}      { return yy::parser::make_ATTRIBUTE_START(loc);}
+{ATTRIBUTE_END}        { return yy::parser::make_ATTRIBUTE_END(loc); }
+
+{COMMENT_LINE}         { /* IGNORE */}
 {COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
 
-<in_comment>.|\n       {/* IGNORE                            */}
+<in_comment>.|\n       { /* IGNORE */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
 
-{AT}                   {EMIT_TOKEN(AT);}
-{COMMA}                {EMIT_TOKEN(COMMA);}
-{HASH}                 {EMIT_TOKEN(HASH);}
-{DOT}                  {EMIT_TOKEN(DOT);}
-{EQ}                   {yylval.operator = OPERATOR_L_EQ; EMIT_TOKEN(EQ);}
-{COLON}                {EMIT_TOKEN(COLON);}
-{IDX_PRT_SEL}          {EMIT_TOKEN(IDX_PRT_SEL);}
-{SEMICOLON}            {EMIT_TOKEN(SEMICOLON);}
-{OPEN_BRACKET}         {EMIT_TOKEN(OPEN_BRACKET);}
-{CLOSE_BRACKET}        {EMIT_TOKEN(CLOSE_BRACKET);}
-{OPEN_SQ_BRACKET}      {EMIT_TOKEN(OPEN_SQ_BRACKET);}
-{CLOSE_SQ_BRACKET}     {EMIT_TOKEN(CLOSE_SQ_BRACKET);}
-{OPEN_SQ_BRACE}        {EMIT_TOKEN(OPEN_SQ_BRACE);}
-{CLOSE_SQ_BRACE}       {EMIT_TOKEN(CLOSE_SQ_BRACE);}
-{STAR}                 {yylval.operator=OPERATOR_STAR   ; EMIT_TOKEN(STAR);}
-{PLUS}                 {yylval.operator=OPERATOR_PLUS   ; EMIT_TOKEN(PLUS);}
-{MINUS}                {yylval.operator=OPERATOR_MINUS  ; EMIT_TOKEN(MINUS);}
-{ASL}                  {yylval.operator=OPERATOR_ASL    ; EMIT_TOKEN(ASL);}
-{ASR}                  {yylval.operator=OPERATOR_ASR    ; EMIT_TOKEN(ASR);}
-{LSL}                  {yylval.operator=OPERATOR_LSL    ; EMIT_TOKEN(LSL);}
-{LSR}                  {yylval.operator=OPERATOR_LSR    ; EMIT_TOKEN(LSR);}
-{DIV}                  {yylval.operator=OPERATOR_DIV    ; EMIT_TOKEN(DIV);}
-{POW}                  {yylval.operator=OPERATOR_POW    ; EMIT_TOKEN(POW);}
-{MOD}                  {yylval.operator=OPERATOR_MOD    ; EMIT_TOKEN(MOD);}
-{GTE}                  {yylval.operator=OPERATOR_GTE    ; EMIT_TOKEN(GTE);}
-{LTE}                  {yylval.operator=OPERATOR_LTE    ; EMIT_TOKEN(LTE);}
-{GT}                   {yylval.operator=OPERATOR_GT     ; EMIT_TOKEN(GT);}
-{LT}                   {yylval.operator=OPERATOR_LT     ; EMIT_TOKEN(LT);}
-{L_NEG}                {yylval.operator=OPERATOR_L_NEG  ; EMIT_TOKEN(L_NEG);}
-{L_AND}                {yylval.operator=OPERATOR_L_AND  ; EMIT_TOKEN(L_AND);}
-{L_OR}                 {yylval.operator=OPERATOR_L_OR   ; EMIT_TOKEN(L_OR);}
-{C_EQ}                 {yylval.operator=OPERATOR_C_EQ   ; EMIT_TOKEN(C_EQ);}
-{L_EQ}                 {yylval.operator=OPERATOR_L_EQ   ; EMIT_TOKEN(L_EQ);}
-{C_NEQ}                {yylval.operator=OPERATOR_C_NEQ  ; EMIT_TOKEN(C_NEQ);}
-{L_NEQ}                {yylval.operator=OPERATOR_L_NEQ  ; EMIT_TOKEN(L_NEQ);}
-{B_NEG}                {yylval.operator=OPERATOR_B_NEG  ; EMIT_TOKEN(B_NEG);}
-{B_AND}                {yylval.operator=OPERATOR_B_AND  ; EMIT_TOKEN(B_AND);}
-{B_OR}                 {yylval.operator=OPERATOR_B_OR   ; EMIT_TOKEN(B_OR);}
-{B_XOR}                {yylval.operator=OPERATOR_B_XOR  ; EMIT_TOKEN(B_XOR);}
-{B_EQU}                {yylval.operator=OPERATOR_B_EQU  ; EMIT_TOKEN(B_EQU);}
-{B_NAND}               {yylval.operator=OPERATOR_B_NAND ; EMIT_TOKEN(B_NAND);}
-{B_NOR}                {yylval.operator=OPERATOR_B_NOR  ; EMIT_TOKEN(B_NOR);}
-{TERNARY}              {yylval.operator=OPERATOR_TERNARY; EMIT_TOKEN(TERNARY);}
+{AT}                   { return yy::parser::make_AT(voperator::AT, loc); /*this should be an operator*/}
+{COMMA}                { return yy::parser::make_COMMA(loc);}
+{HASH}                 { return yy::parser::make_HASH(loc);}
+{DOT}                  { return yy::parser::make_DOT(loc);}
+{COLON}                { return yy::parser::make_COLON(loc);}
+{IDX_PRT_SEL}          { return yy::parser::make_IDX_PRT_SEL(loc);}
+{SEMICOLON}            { return yy::parser::make_SEMICOLON(loc);}
+{OPEN_BRACKET}         { return yy::parser::make_OPEN_BRACKET(loc);}
+{CLOSE_BRACKET}        { return yy::parser::make_CLOSE_BRACKET(loc);}
+{OPEN_SQ_BRACKET}      { return yy::parser::make_OPEN_SQ_BRACKET(loc);}
+{CLOSE_SQ_BRACKET}     { return yy::parser::make_CLOSE_SQ_BRACKET(loc);}
+{OPEN_SQ_BRACE}        { return yy::parser::make_OPEN_SQ_BRACE(loc);}
+{CLOSE_SQ_BRACE}       { return yy::parser::make_CLOSE_SQ_BRACE(loc);}
+{STAR}                 { return yy::parser::make_STAR  (voperator::STAR, loc) ;}
+{PLUS}                 { return yy::parser::make_PLUS  (voperator::PLUS, loc) ;}
+{MINUS}                { return yy::parser::make_MINUS (voperator::MINUS, loc) ;}
+{ASL}                  { return yy::parser::make_ASL   (voperator::ASL, loc) ;}
+{ASR}                  { return yy::parser::make_ASR   (voperator::ASR, loc) ;}
+{LSL}                  { return yy::parser::make_LSL   (voperator::LSL, loc) ;}
+{LSR}                  { return yy::parser::make_LSR   (voperator::LSR, loc) ;}
+{DIV}                  { return yy::parser::make_DIV   (voperator::DIV, loc) ;}
+{POW}                  { return yy::parser::make_POW   (voperator::POW, loc) ;}
+{MOD}                  { return yy::parser::make_MOD   (voperator::MOD, loc) ;}
+{GTE}                  { return yy::parser::make_GTE   (voperator::GTE, loc) ;}
+{LTE}                  { return yy::parser::make_LTE   (voperator::LTE, loc) ;}
+{GT}                   { return yy::parser::make_GT    (voperator::GT, loc) ;}
+{LT}                   { return yy::parser::make_LT    (voperator::LT, loc) ;}
+{L_NEG}                { return yy::parser::make_L_NEG (voperator::L_NEG, loc) ;}
+{L_AND}                { return yy::parser::make_L_AND (voperator::L_AND, loc) ;}
+{L_OR}                 { return yy::parser::make_L_OR  (voperator::L_OR, loc) ;}
+{C_EQ}                 { return yy::parser::make_C_EQ  (voperator::C_EQ, loc) ;}
+{L_EQ}                 { return yy::parser::make_L_EQ  (voperator::L_EQ, loc) ;}
+{C_NEQ}                { return yy::parser::make_C_NEQ (voperator::C_NEQ, loc) ;}
+{L_NEQ}                { return yy::parser::make_L_NEQ (voperator::L_NEQ, loc) ;}
+{B_NEG}                { return yy::parser::make_B_NEG (voperator::B_NEG, loc) ;}
+{B_AND}                { return yy::parser::make_B_AND (voperator::B_AND, loc) ;}
+{B_OR}                 { return yy::parser::make_B_OR  (voperator::B_OR, loc) ;}
+{B_XOR}                { return yy::parser::make_B_XOR (voperator::B_XOR, loc) ;}
+{B_EQU}                { return yy::parser::make_B_EQU (voperator::B_EQU, loc) ;}
+{B_NAND}               { return yy::parser::make_B_NAND(voperator::B_NAND, loc) ;}
+{B_NOR}                { return yy::parser::make_B_NOR (voperator::B_NOR, loc) ;}
+{TERNARY}              { return yy::parser::make_TERNAR(voperator::TERNARY, loc);}
+{EQ}                   { return yy::parser::make_EQ(loc); /*this is just a symbol not OP*/ }
 
-{BASE_DECIMAL}         {EMIT_TOKEN(DEC_BASE);}
-{BASE_HEX}             {BEGIN(in_hex_val); EMIT_TOKEN(HEX_BASE);}
-{BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
-{BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
+{BASE_DECIMAL}         {return yy::parser::make_DEC_BASE(loc);}
+{BASE_HEX}             {BEGIN(in_hex_val); return yy::parser::make_HEX_BASE(loc);}
+{BASE_OCTAL}           {BEGIN(in_oct_val); return yy::parser::make_OCT_BASE(loc);}
+{BASE_BINARY}          {BEGIN(in_bin_val); return yy::parser::make_BIN_BASE(loc);}
 
-<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(BIN_VALUE);}
-<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(OCT_VALUE);}
-<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(HEX_VALUE);}
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); return yy::parser::make_BIN_VALUE(yytext,loc); }
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); return yy::parser::make_OCT_VALUE(yytext,loc); }
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); return yy::parser::make_HEX_VALUE(yytext,loc); }
 
-{NUM_REAL}             {yylval.string=ast_strdup(yytext);EMIT_TOKEN(NUM_REAL);}
-{NUM_UNSIGNED}         {yylval.string=ast_strdup(yytext);EMIT_TOKEN(UNSIGNED_NUMBER);}
+{NUM_REAL}             { return yy::parser::make_NUM_REAL(yytext, loc); }
+{NUM_UNSIGNED}         { return yy::parser::make_UNSIGNED_NUMBER(yytext, loc); }
 
 {MACRO_IDENTIFIER}     {
-    yylval.identifier = ast_new_identifier(yytext,yylineno); 
-    EMIT_TOKEN(MACRO_IDENTIFIER);
+    return yy::parser::make_MACRO_IDENTIFIER(yytext, loc);
 }
 
-{SYSTEM_ID}            {
-    yylval.identifier = ast_new_identifier(yytext,yylineno); 
-    EMIT_TOKEN(SYSTEM_ID);
-}
 {ESCAPED_ID}           {
-    yylval.identifier = ast_new_identifier(yytext,yylineno); 
-    EMIT_TOKEN(ESCAPED_ID);
+    return yy::parser::make_ESCAPED_ID(yytext, loc);
 }
 {SIMPLE_ID}            {
-    yylval.identifier = ast_new_identifier(yytext,yylineno); 
-    EMIT_TOKEN(SIMPLE_ID);
+    return yy::parser::make_SIMPLE_ID(yytext, loc);
 }
 
-{STRING}               {yylval.string= ast_strdup(yytext);EMIT_TOKEN(STRING);}
+{STRING}               { return yy::parser::make_STRING(yytext, loc);}
 
-<*>{NEWLINE}              {/*EMIT_TOKEN(NEWLINE); IGNORE */   }
-<*>{SPACE}                {/*EMIT_TOKEN(SPACE);   IGNORE */   }
-<*>{TAB}                  {/*EMIT_TOKEN(TAB);     IGNORE */   }
+<*>{NEWLINE}              { loc.lines(yyleng); loc.step (); /*IGNORE */   }
+<*>{SPACE}                { loc.step (); /*IGNORE */   }
+<*>{TAB}                  { loc.step (); /*IGNORE */   }
 
+<<EOF>>                { return yy::parser::make_EOF (loc);}
 .                      {
     EMIT_TOKEN(ANY);
 }

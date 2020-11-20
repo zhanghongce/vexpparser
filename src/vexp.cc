@@ -1,10 +1,10 @@
 // Source for AST nodes
 
 #include <vexp.h>
+#include <cassert>
 
-
-VExprAst::VExprAstPtr VExprAst::MakeConstant(int base, const std::string & lit) {
-  return std::make_shared<VExprAstConstant>(base, lit);
+VExprAst::VExprAstPtr VExprAst::MakeConstant(int base, int width, const std::string & lit) {
+  return std::make_shared<VExprAstConstant>(base, width, lit);
 }
 
 // # name #
@@ -98,4 +98,78 @@ VExprAst::VExprAstPtr VExprAst::MakeNaryAst(voperator op, const VExprAstPtrVec &
   return NULL;
 }
 
+std::vector<std::string> voperator_str_vec = {
+  "STAR", // mul
+  "PLUS",
+  "MINUS",
+  "ASL",
+  "ASR",
+  "LSL",
+  "LSR",
+  "DIV",
+  "POW",
+  "MOD",
+  "GTE",
+  "LTE",
+  "GT",
+  "LT",
+  "L_NEG",
+  "L_AND",
+  "L_OR",
+  "C_EQ",
+  "L_EQ",
+  "C_NEQ",
+  "L_NEQ",
+  "B_NEG",
+  "B_AND",
+  "B_OR",
+  "B_XOR",
+  "B_EQU",
+  "B_NAND",
+  "B_NOR",
+  "INDEX", // [idx] operator  A[i1][i2] -> index(index(A,i1),i2)   A[i1[i2]]  index(A, index(i1,i2))
+  "RANGE_INDEX", // [i1:i2] ternary
+  "STORE_OP", // A:<3>:5:<4>:6:<5>:7  (not supported yet)
+  "AT",
+  "TERNARY",
+  /*special ops*/
+  "FUNCTION_APP",
+  "CONCAT",
+  "REPEAT",
+  /*Placeholder*/
+  "MK_CONST",
+  "MK_VAR"
+};
+
+std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) {
+  if (obj) {
+    unsigned idx = static_cast<unsigned>( obj.get_op() );
+    os << "("
+    if (idx < voperator_str_vec.size())
+      os << voperator_str_vec.at(idx);
+    else
+      os << "unknown_op";
+    os << " ";
+    if (obj->is_var()) {
+      auto vptr = VExprAstVar::cast_ptr(obj);
+      assert(vtpr);
+      bool spec = vptr->get_name().second;
+      obj << (spec?"#":"")  << vptr->get_name().first  << (spec?"#":"")  ;
+    } else if (obj->is_constant()) {
+      auto cptr = VExprAstConstant::cast_ptr(obj);
+      assert(ctpr);
+      int base; int width; std::string lit;
+      std::tie(base, width, lit) = ctpr->get_constant();
+      obj << "base" << base << ",width" << width <<"," << lit;
+    } else {
+      // traverse the child
+      for (const auto & child : obj->get_child())
+        os << child <<" ";
+    }
+
+    return os << ")";
+  }
+  // else
+  return (os << "(NULL)");
+} // operator<<
 
