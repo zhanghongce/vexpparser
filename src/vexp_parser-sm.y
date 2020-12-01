@@ -1,10 +1,20 @@
-%require "3.2"
+%require "3.0"
 %language "c++"
 %verbose
 %locations
 %define api.value.type variant
 %define api.token.constructor
 %define api.token.prefix {TOK_}
+%define parse.error verbose
+%define parse.trace
+
+%code requires{
+  #include <vexp.h>
+}
+
+%{
+  typedef VExprAst::VExprAstPtr VExprAstPtr;
+%}
 
 /* Operators Precedence */
 
@@ -39,6 +49,8 @@
 %token <voperator> TERNARY 
 %token <voperator> AT 
 
+%token OPEN_SQ_BRACKET
+%token CLOSE_SQ_BRACKET
 %token OPEN_BRACKET
 %token CLOSE_BRACKET
 %token HASH
@@ -50,14 +62,12 @@
 %token HEX_BASE 
 %token OCT_BASE
 %token DEC_BASE 
-%token IDX_PRT_SEL
+%token IDX_PRT_SEL_PLUS
+%token IDX_PRT_SEL_MINUS
 %token ATTRIBUTE_START
 %token ATTRIBUTE_END
 %token EQ
 %token DOT
-%token SPACE
-%token TAB
-%token NEWLINE
 
 %token <std::string> SIMPLE_ID
 %token <std::string> ESCAPED_ID
@@ -70,10 +80,22 @@
 %token <std::string> STRING
 
 
+%nterm<VExprAst::VExprAstPtr> expression primary conditional_expression number function_call
+%nterm<VExprAst::VExprAstPtr> concatenation multiple_concatenation
+%nterm<voperator> unary_operator
+%nterm<Attribute> attribute_instances list_of_attribute_instances attr_specs
+%nterm<std::string> unsigned_number
+%nterm<std::string> hierarchical_identifier_special_name text_macro_usage
+%nterm<std::string> identifier simple_identifier escaped_identifier attr_name
+%nterm<std::string> string
+%nterm<std::vector<std::string>> hierarchical_identifier
+%nterm<VExprAst::VExprAstPtrVec> expressions
+
 /* Operator Precedence */
 
 
-%right  TERNARY                 /* Lowest Precedence */
+%precedence  COLON                 /* Lowest Precedence. */
+%right  TERNARY
 %left   L_OR
 %left   L_AND
 %left   B_OR B_NOR
@@ -85,11 +107,14 @@
 %left   PLUS MINUS
 %left   STAR DIV MOD
 %left   POW
-%left   AT
+%nonassoc AT                    /* Runtime error */
+/* turn out the followings are not necessary */
+/* %left   OPEN_BRACKET */
+/* %left   OPEN_SQ_BRACKET */
 %right  L_NEG B_NEG            /* Highest Precedence. */
 
 
-
+%%
 
 
 expression :
@@ -181,7 +206,11 @@ expression :
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | conditional_expression {$$=$1;}
-| string {$$ = ast_new_string_expression($1);}
+
+| function_call {
+      $$ = ast_new_primary_function_call($1);
+  }
+
 ;
 
 
@@ -201,14 +230,16 @@ primary :
       $$ = ast_new_primary(PRIMARY_NUMBER);
       $$ -> value.number = $1;
   }
-| function_call{
-      $$ = ast_new_primary_function_call($1);
+| hierarchical_identifier {
+  
   }
-| hierarchical_identifier sq_bracket_expressions{
-    // call the index operator here
-      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
-      $$ -> value.identifier = $1;
+| primary sq_bracket_expression {
+  
   }
+| string {$$ = ast_new_string_expression($1);}
+| hierarchical_identifier_special_name {
+  // 
+}
 | concatenation{
       $$ = ast_new_primary(PRIMARY_CONCATENATION);
       $$ -> value.concatenation = $1;
@@ -217,11 +248,7 @@ primary :
       $$ = ast_new_primary(PRIMARY_CONCATENATION);
       $$ -> value.concatenation = $1;
   }
-| hierarchical_identifier{
-      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
-      $$ -> value.identifier = $1;
-  }
-| OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
+| OPEN_BRACKET expression CLOSE_BRACKET{
    // this is also the sub-()
       $$ = ast_new_primary(PRIMARY_MINMAX_EXP);
       $$ -> value.minmax = $2;
@@ -229,12 +256,10 @@ primary :
 ;
 
 
+
 hierarchical_identifier_special_name :
-  hierarchical_identifier {
-    // this is the place you place the thing
-  }
-| HASH SIMPLE_ID HASH {
-  
+ HASH SIMPLE_ID HASH {
+  /* this is #a# */
   }
 ;
 
@@ -242,21 +267,10 @@ hierarchical_identifier_special_name :
 /* A.8.1 Concatenations */
 
 concatenation : 
-  OPEN_SQ_BRACE expression concatenation_cont{
-    $$ = $3;
-    ast_extend_concatenation($3,NULL,$2);
+  OPEN_SQ_BRACE expressions CLOSE_SQ_BRACE{
   }
 ;
 
-concatenation_cont :
-  CLOSE_SQ_BRACE {
-      $$ = ast_new_empty_concatenation(CONCATENATION_EXPRESSION);
-  }
-| COMMA expression concatenation_cont{
-      $$ = $3;
-      ast_extend_concatenation($3,NULL,$2);
-  }
-;
 
 multiple_concatenation :
   OPEN_SQ_BRACE expression concatenation CLOSE_SQ_BRACE{
@@ -265,15 +279,6 @@ multiple_concatenation :
   }
 ;
 
-
-mintypmax_expression :
-  expression{
-      $$ = ast_new_mintypmax_expression(NULL,$1,NULL);
-  }
-| expression COLON expression COLON expression{
-      $$ = ast_new_mintypmax_expression($1,$3,$5);
-  }
-;
 
 number :
   NUM_REAL{
@@ -318,50 +323,40 @@ unsigned_number :
 ;
 
 
-function_call : hierarchical_function_identifier
+function_call : hierarchical_identifier
  attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET{
     $$ = ast_new_function_call($1,AST_FALSE,AST_FALSE,$2,$4);
  }
- |  hierarchical_function_identifier
+ |  hierarchical_identifier
  attribute_instances OPEN_BRACKET CLOSE_BRACKET {
    // allow no parameters
  }
 ;
 
-hierarchical_function_identifier: hierarchical_identifier
-    {$$=$1; $$ -> type = ID_FUNCTION;};
-
 
 expressions :
   expression {
-        $$ = ast_list_new();
-        ast_list_append($$,$1);
+   $$ = VExprAst::VExprAstPtrVec();
+   $$.push_back($1);
   }
 | expressions COMMA expression{
-        $$ = $1;
-        ast_list_append($$,$3);
+  $$ = $1;
+  ($$).push_back($3);
   }
 ;
 
-
-sq_bracket_expressions :
-   sq_bracket_expression 
- | sq_bracket_expression sq_bracket_expressions
-;
 
 
 sq_bracket_expression :
   OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
-      $$ = ast_list_new();
-      ast_list_append($$,$2);
+    // create one and replace as needed
   }
 | OPEN_SQ_BRACKET expression COLON  expression CLOSE_SQ_BRACKET{
-      $$ = ast_list_new();
-      ast_list_append($$,$2);
   }
-| OPEN_SQ_BRACKET expression IDX_PRT_SEL expression %prec IDX_PRT_SEL CLOSE_SQ_BRACKET{
-      $$ = ast_list_new();
-      ast_list_append($$,$2);
+| OPEN_SQ_BRACKET expression IDX_PRT_SEL_PLUS expression CLOSE_SQ_BRACKET{
+  }
+| OPEN_SQ_BRACKET expression IDX_PRT_SEL_MINUS expression CLOSE_SQ_BRACKET{
+      // $2 $4
   }
 ;
 
@@ -377,34 +372,22 @@ attribute_instances : {$$=NULL;}
 
 list_of_attribute_instances : 
   ATTRIBUTE_START attr_specs ATTRIBUTE_END {
-      $$ = $2;
+      
   }
-| attribute_instances ATTRIBUTE_START attr_specs ATTRIBUTE_END{
-    if($1 != NULL){
-        ast_append_attribute($1, $3);
-        $$ = $1;
-    } else {
-        $$ = $3;
-    }
-  }
-                            ;
+| ATTRIBUTE_START attr_specs ATTRIBUTE_END list_of_attribute_instances{
 
-attr_specs : {$$ = NULL;}
-           | attr_spec {
-               $$ = $1;
+  }
+;
+
+attr_specs : { /*make empty one*/ }
+           | attr_name EQ expression {
+               // make new one
            }
-           | attr_specs COMMA attr_spec {
+           | attr_name EQ expression COMMA attr_specs {
                // Append the new item to the existing list and return.
-               ast_append_attribute($1,$3);
-               $$ = $1;
            }
            ;
 
-attr_spec : attr_name EQ expression
-                {$$ = ast_new_attributes($1,$3);}
-          | attr_name 
-                {$$ = ast_new_attributes($1, NULL);}
-          ;
 
 attr_name : identifier {$$=$1;};
 
@@ -413,14 +396,16 @@ hierarchical_identifier :
   simple_identifier {
       $$ = $1;
   }
-| simple_hierarchical_branch DOT simple_identifier{
+| hierarchical_identifier DOT simple_identifier{
   // text_macro_usage
       $$ = ast_append_identifier($1,$3);
   }
-| simple_hierarchical_branch DOT escaped_identifier{
+| hierarchical_identifier DOT escaped_identifier{
       $$ = ast_append_identifier($1,$3);
   }
 ;
+
+
 
 
 identifier : 
@@ -435,12 +420,10 @@ escaped_identifier  : ESCAPED_ID {
 };
 
 
-white_space : SPACE | TAB | NEWLINE;
-
 
 simple_identifier: 
   SIMPLE_ID {
-    $$ = $1;
+    $$ = VExprAst::MakeVar($1);
 }
 ;
 
@@ -448,17 +431,9 @@ simple_identifier:
 /* 19.0 Compiler Directives */
 
 
-text_macro_usage : MACRO_IDENTIFIER list_of_actual_arguments
-                 | MACRO_IDENTIFIER
-                 ;
-
-list_of_actual_arguments : actual_argument
-                         | list_of_actual_arguments COMMA actual_argument
-                         ;
-
-actual_argument : expression
-                ; 
-
+text_macro_usage : MACRO_IDENTIFIER {
+  
+};
 
 
 
@@ -476,4 +451,6 @@ unary_operator : PLUS    {$$ = $1;}
                | B_EQU   {$$ = $1;}
                ;
 
+
+%%
 

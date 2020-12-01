@@ -6,8 +6,8 @@ FIND_PACKAGE(FLEX 2.5.35 REQUIRED)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-set(FLEX_INPUT  verilog_scanner.l)
-set(FLEX_OUTPUT verilog_scanner.c)
+set(FLEX_INPUT  vexp_scanner.l)
+set(FLEX_OUTPUT vexp_scanner.c)
 
 set(BISON_INPUT  verilog_parser.y)
 set(BISON_OUTPUT verilog_parser.tab.c)

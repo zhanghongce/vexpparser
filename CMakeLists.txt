@@ -23,6 +23,7 @@ set(LIBRARY_NAME ${PROJECT_NAME})
 set(EXECUTABLE_NAME "${LIBRARY_NAME}exec")
 
 add_subdirectory(src)
+include_directories(${VEXP_PARSER_INCLUDE_INSTALL_DIR})
 
 # ------------------------------------------------------------------------
 # install
@@ -81,8 +82,4 @@ endif()
 
 
 # ------------------------------------------------------------------------
-
-enable_testing()
-
-add_subdirectory(tests)
 

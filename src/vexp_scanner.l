@@ -13,8 +13,7 @@
 /* Single character tokens */
 
 NEWLINE             "\n"|"\r\n"
-SPACE               " "
-TAB                 "\t"
+BLANK               [ \t\r]
 
 AT                  "@"
 COMMA               ","
@@ -22,7 +21,8 @@ HASH                "#"
 DOT                 "."
 EQ                  "="
 COLON               ":"
-IDX_PRT_SEL         "+:"|"-:"
+IDX_PRT_SEL_PLUS    "+:"
+IDX_PRT_SEL_MINUS   "-:"
 SEMICOLON           ";"
 OPEN_BRACKET        "\("
 CLOSE_BRACKET       "\)"
@@ -143,56 +143,57 @@ TERNARY             "?"
 {ATTRIBUTE_START}      { return yy::parser::make_ATTRIBUTE_START(loc);}
 {ATTRIBUTE_END}        { return yy::parser::make_ATTRIBUTE_END(loc); }
 
-{COMMENT_LINE}         { /* IGNORE */}
+{COMMENT_LINE}         { /* IGNORE */ }
 {COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
 
-<in_comment>.|\n       { /* IGNORE */}
+<in_comment>.|\n       { /* IGNORE */ }
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
 
-{AT}                   { return yy::parser::make_AT(voperator::AT, loc); /*this should be an operator*/}
-{COMMA}                { return yy::parser::make_COMMA(loc);}
-{HASH}                 { return yy::parser::make_HASH(loc);}
-{DOT}                  { return yy::parser::make_DOT(loc);}
-{COLON}                { return yy::parser::make_COLON(loc);}
-{IDX_PRT_SEL}          { return yy::parser::make_IDX_PRT_SEL(loc);}
-{SEMICOLON}            { return yy::parser::make_SEMICOLON(loc);}
-{OPEN_BRACKET}         { return yy::parser::make_OPEN_BRACKET(loc);}
-{CLOSE_BRACKET}        { return yy::parser::make_CLOSE_BRACKET(loc);}
-{OPEN_SQ_BRACKET}      { return yy::parser::make_OPEN_SQ_BRACKET(loc);}
-{CLOSE_SQ_BRACKET}     { return yy::parser::make_CLOSE_SQ_BRACKET(loc);}
-{OPEN_SQ_BRACE}        { return yy::parser::make_OPEN_SQ_BRACE(loc);}
-{CLOSE_SQ_BRACE}       { return yy::parser::make_CLOSE_SQ_BRACE(loc);}
-{STAR}                 { return yy::parser::make_STAR  (voperator::STAR, loc) ;}
-{PLUS}                 { return yy::parser::make_PLUS  (voperator::PLUS, loc) ;}
-{MINUS}                { return yy::parser::make_MINUS (voperator::MINUS, loc) ;}
-{ASL}                  { return yy::parser::make_ASL   (voperator::ASL, loc) ;}
-{ASR}                  { return yy::parser::make_ASR   (voperator::ASR, loc) ;}
-{LSL}                  { return yy::parser::make_LSL   (voperator::LSL, loc) ;}
-{LSR}                  { return yy::parser::make_LSR   (voperator::LSR, loc) ;}
-{DIV}                  { return yy::parser::make_DIV   (voperator::DIV, loc) ;}
-{POW}                  { return yy::parser::make_POW   (voperator::POW, loc) ;}
-{MOD}                  { return yy::parser::make_MOD   (voperator::MOD, loc) ;}
-{GTE}                  { return yy::parser::make_GTE   (voperator::GTE, loc) ;}
-{LTE}                  { return yy::parser::make_LTE   (voperator::LTE, loc) ;}
-{GT}                   { return yy::parser::make_GT    (voperator::GT, loc) ;}
-{LT}                   { return yy::parser::make_LT    (voperator::LT, loc) ;}
-{L_NEG}                { return yy::parser::make_L_NEG (voperator::L_NEG, loc) ;}
-{L_AND}                { return yy::parser::make_L_AND (voperator::L_AND, loc) ;}
-{L_OR}                 { return yy::parser::make_L_OR  (voperator::L_OR, loc) ;}
-{C_EQ}                 { return yy::parser::make_C_EQ  (voperator::C_EQ, loc) ;}
-{L_EQ}                 { return yy::parser::make_L_EQ  (voperator::L_EQ, loc) ;}
-{C_NEQ}                { return yy::parser::make_C_NEQ (voperator::C_NEQ, loc) ;}
-{L_NEQ}                { return yy::parser::make_L_NEQ (voperator::L_NEQ, loc) ;}
-{B_NEG}                { return yy::parser::make_B_NEG (voperator::B_NEG, loc) ;}
-{B_AND}                { return yy::parser::make_B_AND (voperator::B_AND, loc) ;}
-{B_OR}                 { return yy::parser::make_B_OR  (voperator::B_OR, loc) ;}
-{B_XOR}                { return yy::parser::make_B_XOR (voperator::B_XOR, loc) ;}
-{B_EQU}                { return yy::parser::make_B_EQU (voperator::B_EQU, loc) ;}
-{B_NAND}               { return yy::parser::make_B_NAND(voperator::B_NAND, loc) ;}
-{B_NOR}                { return yy::parser::make_B_NOR (voperator::B_NOR, loc) ;}
-{TERNARY}              { return yy::parser::make_TERNAR(voperator::TERNARY, loc);}
-{EQ}                   { return yy::parser::make_EQ(loc); /*this is just a symbol not OP*/ }
+{AT}                   { return yy::parser::make_AT               ( voperator::AT, loc       ) ; /*this should be an operator*/ }
+{COMMA}                { return yy::parser::make_COMMA            ( loc                      ) ;}
+{HASH}                 { return yy::parser::make_HASH             ( loc                      ) ;}
+{DOT}                  { return yy::parser::make_DOT              ( loc                      ) ;}
+{COLON}                { return yy::parser::make_COLON            ( loc                      ) ;}
+{IDX_PRT_SEL_PLUS}     { return yy::parser::make_IDX_PRT_SEL_PLUS ( loc                      ) ;}
+{IDX_PRT_SEL_MINUS}    { return yy::parser::make_IDX_PRT_SEL_MINUS( loc                      ) ;}
+{SEMICOLON}            { return yy::parser::make_SEMICOLON        ( loc                      ) ;}
+{OPEN_BRACKET}         { return yy::parser::make_OPEN_BRACKET     ( loc                      ) ;}
+{CLOSE_BRACKET}        { return yy::parser::make_CLOSE_BRACKET    ( loc                      ) ;}
+{OPEN_SQ_BRACKET}      { return yy::parser::make_OPEN_SQ_BRACKET  ( loc                      ) ;}
+{CLOSE_SQ_BRACKET}     { return yy::parser::make_CLOSE_SQ_BRACKET ( loc                      ) ;}
+{OPEN_SQ_BRACE}        { return yy::parser::make_OPEN_SQ_BRACE    ( loc                      ) ;}
+{CLOSE_SQ_BRACE}       { return yy::parser::make_CLOSE_SQ_BRACE   ( loc                      ) ;}
+{STAR}                 { return yy::parser::make_STAR             ( voperator::STAR    , loc ) ;}
+{PLUS}                 { return yy::parser::make_PLUS             ( voperator::PLUS    , loc ) ;}
+{MINUS}                { return yy::parser::make_MINUS            ( voperator::MINUS   , loc ) ;}
+{ASL}                  { return yy::parser::make_ASL              ( voperator::ASL     , loc ) ;}
+{ASR}                  { return yy::parser::make_ASR              ( voperator::ASR     , loc ) ;}
+{LSL}                  { return yy::parser::make_LSL              ( voperator::LSL     , loc ) ;}
+{LSR}                  { return yy::parser::make_LSR              ( voperator::LSR     , loc ) ;}
+{DIV}                  { return yy::parser::make_DIV              ( voperator::DIV     , loc ) ;}
+{POW}                  { return yy::parser::make_POW              ( voperator::POW     , loc ) ;}
+{MOD}                  { return yy::parser::make_MOD              ( voperator::MOD     , loc ) ;}
+{GTE}                  { return yy::parser::make_GTE              ( voperator::GTE     , loc ) ;}
+{LTE}                  { return yy::parser::make_LTE              ( voperator::LTE     , loc ) ;}
+{GT}                   { return yy::parser::make_GT               ( voperator::GT      , loc ) ;}
+{LT}                   { return yy::parser::make_LT               ( voperator::LT      , loc ) ;}
+{L_NEG}                { return yy::parser::make_L_NEG            ( voperator::L_NEG   , loc ) ;}
+{L_AND}                { return yy::parser::make_L_AND            ( voperator::L_AND   , loc ) ;}
+{L_OR}                 { return yy::parser::make_L_OR             ( voperator::L_OR    , loc ) ;}
+{C_EQ}                 { return yy::parser::make_C_EQ             ( voperator::C_EQ    , loc ) ;}
+{L_EQ}                 { return yy::parser::make_L_EQ             ( voperator::L_EQ    , loc ) ;}
+{C_NEQ}                { return yy::parser::make_C_NEQ            ( voperator::C_NEQ   , loc ) ;}
+{L_NEQ}                { return yy::parser::make_L_NEQ            ( voperator::L_NEQ   , loc ) ;}
+{B_NEG}                { return yy::parser::make_B_NEG            ( voperator::B_NEG   , loc ) ;}
+{B_AND}                { return yy::parser::make_B_AND            ( voperator::B_AND   , loc ) ;}
+{B_OR}                 { return yy::parser::make_B_OR             ( voperator::B_OR    , loc ) ;}
+{B_XOR}                { return yy::parser::make_B_XOR            ( voperator::B_XOR   , loc ) ;}
+{B_EQU}                { return yy::parser::make_B_EQU            ( voperator::B_EQU   , loc ) ;}
+{B_NAND}               { return yy::parser::make_B_NAND           ( voperator::B_NAND  , loc ) ;}
+{B_NOR}                { return yy::parser::make_B_NOR            ( voperator::B_NOR   , loc ) ;}
+{TERNARY}              { return yy::parser::make_TERNAR           ( voperator::TERNARY , loc ) ;}
+{EQ}                   { return yy::parser::make_EQ               ( loc                      ) ; /*this is just a symbol not OP*/ }
 
 {BASE_DECIMAL}         {return yy::parser::make_DEC_BASE(loc);}
 {BASE_HEX}             {BEGIN(in_hex_val); return yy::parser::make_HEX_BASE(loc);}
@@ -219,9 +220,8 @@ TERNARY             "?"
 
 {STRING}               { return yy::parser::make_STRING(yytext, loc);}
 
-<*>{NEWLINE}              { loc.lines(yyleng); loc.step (); /*IGNORE */   }
-<*>{SPACE}                { loc.step (); /*IGNORE */   }
-<*>{TAB}                  { loc.step (); /*IGNORE */   }
+<*>{BLANK}+          { loc.step (); }
+<*>{NEWLINE}+        { loc.lines (yyleng); loc.step (); }
 
 <<EOF>>                { return yy::parser::make_EOF (loc);}
 .                      {

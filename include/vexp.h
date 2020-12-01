@@ -55,6 +55,8 @@ enum class voperator {
   B_NOR,
   INDEX, // [idx] operator  A[i1][i2] -> index(index(A,i1),i2)   A[i1[i2]]  index(A, index(i1,i2))
   RANGE_INDEX, // [i1:i2] ternary
+  IDX_PRT_SEL_PLUS, // [i1:+i2] ternary
+  IDX_PRT_SEL_MINUS, // [i1:-i2] ternary
   STORE_OP, // A:<3>:5:<4>:6:<5>:7  (not supported yet)
   AT,
 
@@ -97,6 +99,18 @@ protected:
 
   voperator op_;
   VExprAstPtrVec child_;
+};
+
+
+class Attribute {
+public:
+  typedef std::shared_ptr<Attribute> AttributePtr;
+  typedef std::unordered_map<std::string,VExprAstPtr> AttribMapT;
+
+  Attribute() {}
+  bool AddAttribute(const std::string & name, const VExprAstPtr & exp);
+protected:
+  AttribMapT attrib_;
 };
 
 class VExprAstConstant : public VExprAst{

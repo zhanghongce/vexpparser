@@ -79,6 +79,8 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & 
 VExprAst::VExprAstPtr VExprAst::MakeTernaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const VExprAstPtr & c3) {
   if (op == voperator::TERNARY || 
       op == RANGE_INDEX ||
+      op == IDX_PRT_SEL_PLUS ||
+      op == IDX_PRT_SEL_MINUS ||
       op == STORE_OP
     ) {
     return std::make_shared<VExprAst>(op , {c1,c2,c3});
@@ -129,6 +131,8 @@ std::vector<std::string> voperator_str_vec = {
   "B_NOR",
   "INDEX", // [idx] operator  A[i1][i2] -> index(index(A,i1),i2)   A[i1[i2]]  index(A, index(i1,i2))
   "RANGE_INDEX", // [i1:i2] ternary
+  "IDX_PRT_SEL_PLUS", // [i1:+i2] ternary
+  "IDX_PRT_SEL_MINUS", // [i1:-i2] ternary
   "STORE_OP", // A:<3>:5:<4>:6:<5>:7  (not supported yet)
   "AT",
   "TERNARY",
@@ -172,4 +176,13 @@ std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) 
   // else
   return (os << "(NULL)");
 } // operator<<
+
+// -----------------------------------------------------------------
+
+
+bool Attribute::AddAttribute(const std::string & name, const VExprAstPtr & exp) {
+  bool not_overwrite = attrib_.find(name) == attrib_.end() 
+  attrib_.insert(std::make_pair(name, exp));
+  return not_overwrite;
+}
 
