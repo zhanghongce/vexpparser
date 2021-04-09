@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(vexpparser VERSION 1.1.0 LANGUAGES C)
+project(vexpparser VERSION 1.1.0 LANGUAGES CXX)
 
 option(VEXP_PARSER_EXPORT_PACAKGE "Export package if enabled." OFF)
 
@@ -19,8 +19,8 @@ set(VEXP_PARSER_CMAKE_PROJECT_TARGETS_FILE  "${PROJECT_NAME}Targets.cmake")
 
 # ------------------------------------------------------------------------
 
-set(LIBRARY_NAME ${PROJECT_NAME}) 
-set(EXECUTABLE_NAME "${LIBRARY_NAME}exec")
+set(VEXP_LIBRARY_NAME ${PROJECT_NAME}) 
+set(VEXP_EXECUTABLE_NAME "${VEXP_LIBRARY_NAME}exec")
 
 add_subdirectory(src)
 include_directories(${VEXP_PARSER_INCLUDE_INSTALL_DIR})
@@ -53,7 +53,7 @@ install(
 )
 
 export(
-  TARGETS ${LIBRARY_NAME}
+  TARGETS ${VEXP_LIBRARY_NAME}
   NAMESPACE ${PROJECT_NAME}::
   FILE ${VEXP_PARSER_CMAKE_PROJECT_TARGETS_FILE}
 )

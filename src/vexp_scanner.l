@@ -4,8 +4,9 @@
 # include <cstdlib>
 # include <cstring> // strerror
 # include <string>
-# include "driver.hh"
-# include "parser.hh"
+
+# define YY_NO_UNISTD_H
+
 %}
 
 %option noyywrap nounput noinput batch debug nounistd

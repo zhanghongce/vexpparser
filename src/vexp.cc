@@ -9,10 +9,10 @@ VExprAst::VExprAstPtr VExprAst::MakeConstant(int base, int width, const std::str
 
 // # name #
 VExprAst::VExprAstPtr VExprAst::MakeSpecialName(const std::string & name) {
-  return std::make_shared<MakeVar>(name, true);
+  return std::make_shared<VExprAstVar>(name, true);
 }
 VExprAst::VExprAstPtr VExprAst::MakeVar(const std::string & name) {
-  return std::make_shared<MakeVar>(name, false);
+  return std::make_shared<VExprAstVar>(name, false);
 }
 
 VExprAst::VExprAstPtr VExprAst::MakeUnaryAst(voperator op, const VExprAstPtr & c) {
@@ -27,7 +27,8 @@ VExprAst::VExprAstPtr VExprAst::MakeUnaryAst(voperator op, const VExprAstPtr & c
       op == voperator::B_XOR  ||
       op == voperator::B_EQU      // "^~"|"~^"
     ) {
-    return std::make_shared<VExprAst>(op , {c});
+    VExprAstPtrVec tmp({c});
+    return std::make_shared<VExprAst>(op , tmp);
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched);
   return NULL;
@@ -69,7 +70,8 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & 
       op == voperator::INDEX      ||
       op == voperator::AT
     ) {
-    return std::make_shared<VExprAst>(op , {c1,c2});
+    VExprAstPtrVec tmp({c1,c2});
+    return std::make_shared<VExprAst>(op , tmp);
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched);
   return NULL;
@@ -78,12 +80,13 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & 
 
 VExprAst::VExprAstPtr VExprAst::MakeTernaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const VExprAstPtr & c3) {
   if (op == voperator::TERNARY || 
-      op == RANGE_INDEX ||
-      op == IDX_PRT_SEL_PLUS ||
-      op == IDX_PRT_SEL_MINUS ||
-      op == STORE_OP
+      op == voperator::RANGE_INDEX ||
+      op == voperator::IDX_PRT_SEL_PLUS ||
+      op == voperator::IDX_PRT_SEL_MINUS ||
+      op == voperator::STORE_OP
     ) {
-    return std::make_shared<VExprAst>(op , {c1,c2,c3});
+    VExprAstPtrVec tmp({c1,c2,c3});
+    return std::make_shared<VExprAst>(op , tmp);
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched);
   return NULL;
@@ -147,8 +150,8 @@ std::vector<std::string> voperator_str_vec = {
 
 std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) {
   if (obj) {
-    unsigned idx = static_cast<unsigned>( obj.get_op() );
-    os << "("
+    unsigned idx = static_cast<unsigned>( obj->get_op() );
+    os << "(";
     if (idx < voperator_str_vec.size())
       os << voperator_str_vec.at(idx);
     else
@@ -156,15 +159,15 @@ std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) 
     os << " ";
     if (obj->is_var()) {
       auto vptr = VExprAstVar::cast_ptr(obj);
-      assert(vtpr);
+      assert(vptr);
       bool spec = vptr->get_name().second;
-      obj << (spec?"#":"")  << vptr->get_name().first  << (spec?"#":"")  ;
+      os << (spec?"#":"")  << vptr->get_name().first  << (spec?"#":"")  ;
     } else if (obj->is_constant()) {
       auto cptr = VExprAstConstant::cast_ptr(obj);
-      assert(ctpr);
+      assert(cptr);
       int base; int width; std::string lit;
-      std::tie(base, width, lit) = ctpr->get_constant();
-      obj << "base" << base << ",width" << width <<"," << lit;
+      std::tie(base, width, lit) = cptr->get_constant();
+      os << "base" << base << ",width" << width <<"," << lit;
     } else {
       // traverse the child
       for (const auto & child : obj->get_child())
@@ -181,8 +184,14 @@ std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) 
 
 
 bool Attribute::AddAttribute(const std::string & name, const VExprAstPtr & exp) {
-  bool not_overwrite = attrib_.find(name) == attrib_.end() 
+  bool not_overwrite = attrib_.find(name) == attrib_.end();
   attrib_.insert(std::make_pair(name, exp));
   return not_overwrite;
+}
+
+void Attribute::Append(const Attribute & other) {
+  for (const auto & n_v_pair : other.attrib_) {
+    attrib_.insert(std::make_pair(n_v_pair.first, n_v_pair.second));
+  }
 }
 

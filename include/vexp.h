@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 
 
 enum class ExceptionCause { 
@@ -16,12 +17,13 @@ enum class ExceptionCause {
 
 class VexpException {
 public:
-  VexpException( ExceptionCause cause, const std::string & msg ) : cause_ ( cause ), msg_(msg);
+  VexpException( ExceptionCause cause, const std::string & msg = "" ) : cause_ ( cause ), msg_(msg) {}
 
   const ExceptionCause cause_;
   const std::string msg_;
 };
 
+// map: operator -> to their string name 
 extern std::vector<std::string> voperator_str_vec;
 
 enum class voperator { 
@@ -103,12 +105,14 @@ protected:
 
 
 class Attribute {
+  using VExprAstPtr = VExprAst::VExprAstPtr;
 public:
   typedef std::shared_ptr<Attribute> AttributePtr;
   typedef std::unordered_map<std::string,VExprAstPtr> AttribMapT;
 
   Attribute() {}
   bool AddAttribute(const std::string & name, const VExprAstPtr & exp);
+  void Append(const Attribute & other);
 protected:
   AttribMapT attrib_;
 };
@@ -121,7 +125,7 @@ public:
   
   virtual bool is_leaf()     const override {return true;}
   virtual bool is_constant() const override {return true;}
-  std::tuple<int, int, std::string> get_constant() const {return std::make_pair(base_, width_, lit_);}
+  std::tuple<int, int, std::string> get_constant() const {return std::make_tuple(base_, width_, lit_);}
 protected:
   VExprAstConstant(int base, int width, const std::string & lit) :
      VExprAst(voperator::MK_CONST, {}), base_(base), width_(width), lit_ (lit) {}
@@ -138,11 +142,25 @@ public:
   
   virtual bool is_leaf() const override {return true;}
   virtual bool is_var()  const override {return true;}
-  std::tuple<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
+  std::pair<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
+  
 protected:
-  VExprAstVar(const std::string & name, bool is_special_name) : VExprAst(voperator::MK_VAR, {}), name_(name), is_special_name_(is_special_name) {}
+  VExprAstVar(const std::string & name, bool is_special_name) : 
+    VExprAst(voperator::MK_VAR, {}), 
+    name_(name), is_special_name_(is_special_name) {}
+    
   std::string name_;
-  bool is_special_name_;
+  bool is_special_name_; // #name#
 };
+
+int width_to_int(const std::string &); // convert width to int
+
+// this class is only used in AST construction
+struct SuffixOp {
+  using VExprAstPtr = VExprAst::VExprAstPtr;
+
+  voperator op;
+  std::vector<VExprAstPtr> ranges;
+}; // SuffixOp
 
 #endif // _VEXPPARSER_VEXP_H_

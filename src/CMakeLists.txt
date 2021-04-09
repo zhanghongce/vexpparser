@@ -9,29 +9,11 @@ set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(FLEX_INPUT  vexp_scanner.l)
 set(FLEX_OUTPUT vexp_scanner.c)
 
-set(BISON_INPUT  verilog_parser.y)
-set(BISON_OUTPUT verilog_parser.tab.c)
+set(BISON_INPUT  vexp_parser.y)
+set(BISON_OUTPUT vexp_parser.cc)
 
 # ------------------------------------------------------------------------
 
-option(WITH_COVERAGE "If YES, build the debug executable with coverage." NO)
-
-SET(COV_FLAGS_C     "-fprofile-arcs -ftest-coverage")
-SET(COV_FLAGS_LINK  "-fprofile-arcs -ftest-coverage")
-
-# ------------------------------------------------------------------------
-
-if(${WITH_COVERAGE})
-
-  message(STATUS "Building with coverage flags set.")
-  SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${COV_FLAGS_C} -DVERILOG_PARSER_COVERAGE_ON")
-  SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} ${COV_FLAGS_LINK}")
-
-else()
-
-  message(STATUS "NOT building with coverage.")
-
-endif()
 
 message(STATUS "Parser Build Flags Debug:   ${CMAKE_C_FLAGS_DEBUG}")
 message(STATUS "Parser Link Flags Debug:    ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
@@ -61,34 +43,29 @@ SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
 
 # ------------------------------------------------------------------------
 
-set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
+set(VEXP_PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
                    ${BINARY_DIR}/${BISON_OUTPUT}
-                   ${SOURCE_DIR}/verilog_ast.c
-                   ${SOURCE_DIR}/verilog_ast_mem.c
-                   ${SOURCE_DIR}/verilog_ast_util.c
-                   ${SOURCE_DIR}/verilog_ast_common.c
-                   ${SOURCE_DIR}/verilog_parser_wrapper.c
-                   ${SOURCE_DIR}/verilog_preprocessor.c
+                   ${SOURCE_DIR}/vexp.cc
 )
 
-add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
-add_library(${LIBRARY_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
+add_library(${VEXP_LIBRARY_NAME} ${VEXP_PARSER_LIB_SRC})
+add_library(${VEXP_LIBRARY_NAME}::${VEXP_LIBRARY_NAME} ALIAS ${VEXP_LIBRARY_NAME})
 
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   if(${CMAKE_COMPILER_IS_GNUCXX})
-    target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
-    target_compile_options(${LIBRARY_NAME} PRIVATE -W)
+    target_compile_options(${VEXP_LIBRARY_NAME} PRIVATE -Wall)
+    target_compile_options(${VEXP_LIBRARY_NAME} PRIVATE -W)
   endif()
 endif()
 
 set_property(
-  TARGET ${LIBRARY_NAME}
+  TARGET ${VEXP_LIBRARY_NAME}
   PROPERTY POSITION_INDEPENDENT_CODE ON
 )
 
-set_target_properties(${LIBRARY_NAME} PROPERTIES C_EXTENSIONS OFF)
+set_target_properties(${VEXP_LIBRARY_NAME} PROPERTIES C_EXTENSIONS OFF)
 
-target_include_directories(${LIBRARY_NAME}
+target_include_directories(${VEXP_LIBRARY_NAME}
   PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -96,25 +73,25 @@ target_include_directories(${LIBRARY_NAME}
 
 # ------------------------------------------------------------------------
 
-add_executable(${EXECUTABLE_NAME} main.c)
+add_executable(${VEXP_EXECUTABLE_NAME} vexp_test.cc)
 
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   if(${CMAKE_COMPILER_IS_GNUCXX})
-    target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
-    target_compile_options(${EXECUTABLE_NAME} PRIVATE -W)
+    target_compile_options(${VEXP_EXECUTABLE_NAME} PRIVATE -Wall)
+    target_compile_options(${VEXP_EXECUTABLE_NAME} PRIVATE -W)
   endif()
 endif()
 
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+target_link_libraries(${VEXP_EXECUTABLE_NAME} ${VEXP_LIBRARY_NAME})
 
-target_include_directories(${EXECUTABLE_NAME} 
+target_include_directories(${VEXP_EXECUTABLE_NAME} 
     PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
 
 # ------------------------------------------------------------------------
 
-install(TARGETS ${LIBRARY_NAME} ${EXECUTABLE_NAME}
-  EXPORT ${VLOG_PARSER_TARGETS_EXPORT_NAME}
+install(TARGETS ${VEXP_LIBRARY_NAME} ${VEXP_EXECUTABLE_NAME}
+  EXPORT ${VEXP_PARSER_TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
@@ -122,7 +99,7 @@ install(TARGETS ${LIBRARY_NAME} ${EXECUTABLE_NAME}
 )
 
 install(
-  DIRECTORY ${VLOG_PARSER_INCLUDE_BUILD_DIR}/verilogparser
-  DESTINATION ${VLOG_PARSER_INCLUDE_INSTALL_DIR}
+  DIRECTORY ${VEXP_PARSER_INCLUDE_BUILD_DIR}/vexpparser
+  DESTINATION ${VEXP_PARSER_INCLUDE_INSTALL_DIR}
 )
 
