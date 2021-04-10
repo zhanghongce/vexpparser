@@ -120,96 +120,97 @@
 
 expression :
   primary {
-    $$ = ast_new_expression_primary($1);
+    $$ = $1;
   }
 | unary_operator attribute_instances primary{
-    $$ = ast_new_unary_expression($3,$1,$2, AST_FALSE);
+    $$ = MakeUnaryAst( $1, $3 );
   }
 | expression AT  attribute_instances expression{
     // this is the A@B shortcut
+    $$ = MakeBinaryAst(voperator::AT, $1, $4);
   }
 | expression PLUS  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::PLUS, $1, $4);
   }
 | expression MINUS attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::MINUS, $1, $4);
   }
 | expression STAR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::STAR, $1, $4);
   }
 | expression DIV   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::DIV, $1, $4);
   }
 | expression MOD   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::MOD, $1, $4);
   }
 | expression L_EQ  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::L_EQ, $1, $4);
   }
 | expression L_NEQ attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::L_NEQ, $1, $4);
   }
 | expression C_EQ  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::C_EQ, $1, $4);
   }
 | expression C_NEQ attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::C_NEQ, $1, $4);
   }
 | expression L_AND attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::L_AND, $1, $4);
   }
 | expression L_OR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::L_OR, $1, $4);
   }
 | expression POW   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::POW, $1, $4);
   }
 | expression LT    attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::LT, $1, $4);
   }
 | expression LTE   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::LTE, $1, $4);
   }
 | expression GT    attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::GT, $1, $4);
   }
 | expression GTE   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::GTE, $1, $4);
   }
 | expression B_AND attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_AND, $1, $4);
   }
 | expression B_OR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_OR, $1, $4);
   }
 | expression B_XOR attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_XOR, $1, $4);
   }
 | expression B_NOR attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_NOR, $1, $4);
   }
 | expression B_NAND attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_NAND, $1, $4);
   }
 | expression B_EQU attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::B_EQU, $1, $4);
   }
 | expression LSR   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::LSR, $1, $4);
   }
 | expression LSL   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::LSL, $1, $4);
   }
 | expression ASR   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::ASR, $1, $4);
   }
 | expression ASL   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ = MakeBinaryAst(voperator::ASL, $1, $4);
   }
 | conditional_expression {$$=$1;}
 
 | function_call {
-      $$ = ast_new_primary_function_call($1);
+      $$ = $1;
   }
 
 ;
@@ -220,9 +221,8 @@ expression :
 
 conditional_expression : 
   expression TERNARY attribute_instances expression COLON expression{
-    $$ = ast_new_conditional_expression($1,$4,$6,$3);
+    $$ = MakeTernaryAst( voperator::TERNARY, $1,$4,$6);
   }
-
 ;
 
 
@@ -232,27 +232,29 @@ primary :
       $$ -> value.number = $1;
   }
 | hierarchical_identifier {
-  
+      $$ = MakeVar($1);
   }
 | primary sq_bracket_expression {
-  
+    if ( $2.op == voperator::INDEX ) {
+      // binary operation
+      $$ = MakeBinaryAst($2.op, $1, $2.ranges.at(0));
+    } else {
+      // ternary operation
+      $$ = MakeBinaryAst($2.op, $1, $2.ranges.at(0), $2.ranges.at(1));
+    }
   }
 | string {$$ = ast_new_string_expression($1);}
 | hierarchical_identifier_special_name {
-  // 
+  $$ = MakeSpecialName($1);
 }
 | concatenation{
-      $$ = ast_new_primary(PRIMARY_CONCATENATION);
-      $$ -> value.concatenation = $1;
+    $$ = $1;
   }
 | multiple_concatenation{
-      $$ = ast_new_primary(PRIMARY_CONCATENATION);
-      $$ -> value.concatenation = $1;
+    $$ = $1;
   }
 | OPEN_BRACKET expression CLOSE_BRACKET{
-   // this is also the sub-()
-      $$ = ast_new_primary(PRIMARY_MINMAX_EXP);
-      $$ -> value.minmax = $2;
+    $$ = $2;
   }
 ;
 
@@ -260,7 +262,8 @@ primary :
 
 hierarchical_identifier_special_name :
  HASH SIMPLE_ID HASH {
-  /* this is #a# */
+  /* this is #a#, but we return the string in the middle */
+  $$ = $2;
   }
 ;
 
@@ -276,11 +279,8 @@ concatenation :
 
 multiple_concatenation :
   OPEN_SQ_BRACE expression concatenation CLOSE_SQ_BRACE{
-    // check here to be constant?
-    $$ = $3;
-    $$ -> repeat = $2; // you need to change this to use REPEAT operator 
+    $$ =  MakeBinaryAst(voperator::REPEAT, $2, $3 );
   }
-
 ;
 
 
@@ -292,16 +292,18 @@ number :
   // TODO : 1. auto width determine
   //        2. width check
   //        3. check?
-    $$ = MakeConstant(2, 0 ,$3);
+  // NOTE: you can also add internal translation annotations
+  //       when handling this pass
+    $$ = MakeConstant(2, 0 ,$2);
 }
 | HEX_BASE HEX_VALUE {
-    $$ = MakeConstant(16, 0 ,$3);
+    $$ = MakeConstant(16, 0 ,$2);
 }
 | OCT_BASE OCT_VALUE {
-    $$ = MakeConstant(8, 0 ,$3);
+    $$ = MakeConstant(8, 0 ,$2);
 }
 | DEC_BASE UNSIGNED_NUMBER {
-    $$ = MakeConstant(10, 0 ,$3);
+    $$ = MakeConstant(10, 0 ,$2);
 }
 | UNSIGNED_NUMBER BIN_BASE BIN_VALUE {
     $$ = MakeConstant(2, width_to_int($1) ,$3);

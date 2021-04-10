@@ -72,14 +72,28 @@ enum class voperator {
   MK_VAR
    };
 
+class AbstractInternalInfo {
+  // this class can be used to attach additional information
+  // to an ast node and generally, you should create
+  // derived class from it
+  public:
+    typedef std::shared_ptr<AbstractInternalInfo> InternalInfoPtr;
+    virtual void should_not_instantiate() = 0;
+}; 
+
 class VExprAst {
 public:
+  using InternalInfoPtr = AbstractInternalInfo::InternalInfoPtr;
   typedef std::shared_ptr<VExprAst> VExprAstPtr;
   typedef std::vector<VExprAstPtr> VExprAstPtrVec;
   
   voperator get_op() { return op_; }
   unsigned get_child_cnt() { return child_.size() ; }
   virtual const VExprAstPtrVec & get_child()  { return child_; } 
+  // about the annotation
+  template<class T> std::shared_ptr<T> get_annotation() const {
+    return std::dynamic_pointer_cast<T>(annotate_);
+  }
 
   // factory function -- do the checking here
   static VExprAstPtr MakeConstant(int base, int width, const std::string & lit); // if no width specified then 0
@@ -95,12 +109,13 @@ public:
   virtual bool is_leaf()     const {return false;}
   virtual bool is_var()      const {return false;}
   virtual bool is_constant() const {return false;}
-  
+
 protected:
   VExprAst(voperator op, const VExprAstPtrVec & c) : op_(op) , child_(c) {}
 
   voperator op_;
   VExprAstPtrVec child_;
+  InternalInfoPtr annotate_;
 };
 
 
