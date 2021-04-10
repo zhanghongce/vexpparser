@@ -224,7 +224,7 @@ TERNARY             "?"
 <*>{BLANK}+          { loc.step (); }
 <*>{NEWLINE}+        { loc.lines (yyleng); loc.step (); }
 
-<<EOF>>                { return yy::parser::make_EOF (loc);}
+<<EOF>>                { return yyterminate();}
 .                      {
     EMIT_TOKEN(ANY);
 }

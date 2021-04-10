@@ -8,12 +8,11 @@
 %define parse.error verbose
 %define parse.trace
 
-%code requires{
-  #include <vexp.h>
-}
-
 %{
+  #include <vexp.h>
   typedef VExprAst::VExprAstPtr VExprAstPtr;
+  extern int yylex (void);
+
 %}
 
 /* Operators Precedence */
@@ -88,7 +87,7 @@
 %nterm<std::string> hierarchical_identifier_special_name text_macro_usage
 %nterm<std::string> identifier simple_identifier escaped_identifier attr_name
 %nterm<std::string> string
-%nterm<std::vector<std::string>> hierarchical_identifier
+%nterm<std::string> hierarchical_identifier
 %nterm<VExprAst::VExprAstPtrVec> expressions
 %nterm<SuffixOp>  sq_bracket_expression
 
@@ -123,89 +122,89 @@ expression :
     $$ = $1;
   }
 | unary_operator attribute_instances primary{
-    $$ = MakeUnaryAst( $1, $3 );
+    $$ = VExprAst::MakeUnaryAst( $1, $3 );
   }
 | expression AT  attribute_instances expression{
     // this is the A@B shortcut
-    $$ = MakeBinaryAst(voperator::AT, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::AT, $1, $4);
   }
 | expression PLUS  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::PLUS, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::PLUS, $1, $4);
   }
 | expression MINUS attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::MINUS, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::MINUS, $1, $4);
   }
 | expression STAR  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::STAR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::STAR, $1, $4);
   }
 | expression DIV   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::DIV, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::DIV, $1, $4);
   }
 | expression MOD   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::MOD, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::MOD, $1, $4);
   }
 | expression L_EQ  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::L_EQ, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::L_EQ, $1, $4);
   }
 | expression L_NEQ attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::L_NEQ, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::L_NEQ, $1, $4);
   }
 | expression C_EQ  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::C_EQ, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::C_EQ, $1, $4);
   }
 | expression C_NEQ attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::C_NEQ, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::C_NEQ, $1, $4);
   }
 | expression L_AND attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::L_AND, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::L_AND, $1, $4);
   }
 | expression L_OR  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::L_OR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::L_OR, $1, $4);
   }
 | expression POW   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::POW, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::POW, $1, $4);
   }
 | expression LT    attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::LT, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::LT, $1, $4);
   }
 | expression LTE   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::LTE, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::LTE, $1, $4);
   }
 | expression GT    attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::GT, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::GT, $1, $4);
   }
 | expression GTE   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::GTE, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::GTE, $1, $4);
   }
 | expression B_AND attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_AND, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_AND, $1, $4);
   }
 | expression B_OR  attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_OR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_OR, $1, $4);
   }
 | expression B_XOR attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_XOR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_XOR, $1, $4);
   }
 | expression B_NOR attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_NOR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_NOR, $1, $4);
   }
 | expression B_NAND attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_NAND, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_NAND, $1, $4);
   }
 | expression B_EQU attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::B_EQU, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::B_EQU, $1, $4);
   }
 | expression LSR   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::LSR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::LSR, $1, $4);
   }
 | expression LSL   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::LSL, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::LSL, $1, $4);
   }
 | expression ASR   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::ASR, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::ASR, $1, $4);
   }
 | expression ASL   attribute_instances expression{
-    $$ = MakeBinaryAst(voperator::ASL, $1, $4);
+    $$ = VExprAst::MakeBinaryAst(voperator::ASL, $1, $4);
   }
 | conditional_expression {$$=$1;}
 
@@ -221,31 +220,30 @@ expression :
 
 conditional_expression : 
   expression TERNARY attribute_instances expression COLON expression{
-    $$ = MakeTernaryAst( voperator::TERNARY, $1,$4,$6);
+    $$ = VExprAst::MakeTernaryAst( voperator::TERNARY, $1,$4,$6);
   }
 ;
 
 
 primary :
   number{
-      $$ = ast_new_primary(PRIMARY_NUMBER);
-      $$ -> value.number = $1;
+      $$ = $1;
   }
 | hierarchical_identifier {
-      $$ = MakeVar($1);
+      $$ = VExprAst::MakeVar($1);
   }
 | primary sq_bracket_expression {
     if ( $2.op == voperator::INDEX ) {
       // binary operation
-      $$ = MakeBinaryAst($2.op, $1, $2.ranges.at(0));
+      $$ = VExprAst::MakeBinaryAst($2.op, $1, $2.ranges.at(0));
     } else {
       // ternary operation
-      $$ = MakeBinaryAst($2.op, $1, $2.ranges.at(0), $2.ranges.at(1));
+      $$ = VExprAst::MakeTernaryAst($2.op, $1, $2.ranges.at(0), $2.ranges.at(1));
     }
   }
-| string {$$ = ast_new_string_expression($1);}
+| string {$$ = VExprAst::MakeSpecialName($1);}
 | hierarchical_identifier_special_name {
-  $$ = MakeSpecialName($1);
+  $$ = VExprAst::MakeSpecialName($1);
 }
 | concatenation{
     $$ = $1;
@@ -272,21 +270,21 @@ hierarchical_identifier_special_name :
 
 concatenation : 
   OPEN_SQ_BRACE expressions CLOSE_SQ_BRACE{
-   $$ = MakeNaryAst(voperator::CONCAT, $2 );
+   $$ = VExprAst::MakeNaryAst(voperator::CONCAT, $2 );
   }
 ;
 
 
 multiple_concatenation :
   OPEN_SQ_BRACE expression concatenation CLOSE_SQ_BRACE{
-    $$ =  MakeBinaryAst(voperator::REPEAT, $2, $3 );
+    $$ =  VExprAst::MakeBinaryAst(voperator::REPEAT, $2, $3 );
   }
 ;
 
 
 number :
   NUM_REAL{
-    $$ = MakeConstant(0,0,$1);
+    $$ = VExprAst::MakeConstant(0,0,$1);
   }
 | BIN_BASE BIN_VALUE {
   // TODO : 1. auto width determine
@@ -294,31 +292,31 @@ number :
   //        3. check?
   // NOTE: you can also add internal translation annotations
   //       when handling this pass
-    $$ = MakeConstant(2, 0 ,$2);
+    $$ = VExprAst::MakeConstant(2, 0 ,$2);
 }
 | HEX_BASE HEX_VALUE {
-    $$ = MakeConstant(16, 0 ,$2);
+    $$ = VExprAst::MakeConstant(16, 0 ,$2);
 }
 | OCT_BASE OCT_VALUE {
-    $$ = MakeConstant(8, 0 ,$2);
+    $$ = VExprAst::MakeConstant(8, 0 ,$2);
 }
 | DEC_BASE UNSIGNED_NUMBER {
-    $$ = MakeConstant(10, 0 ,$2);
+    $$ = VExprAst::MakeConstant(10, 0 ,$2);
 }
 | UNSIGNED_NUMBER BIN_BASE BIN_VALUE {
-    $$ = MakeConstant(2, width_to_int($1) ,$3);
+    $$ = VExprAst::MakeConstant(2, width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER HEX_BASE HEX_VALUE {
-    $$ = MakeConstant(16, width_to_int($1) ,$3);
+    $$ = VExprAst::MakeConstant(16, width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER OCT_BASE OCT_VALUE {
-    $$ = MakeConstant(8, width_to_int($1) ,$3);
+    $$ = VExprAst::MakeConstant(8, width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
-    $$ = MakeConstant(10, width_to_int($1) ,$3);
+    $$ = VExprAst::MakeConstant(10, width_to_int($1) ,$3);
 }
 | unsigned_number {
-    $$ = MakeConstant(0,0,$1);}
+    $$ = VExprAst::MakeConstant(0,0,$1);}
 ;
 
 
@@ -331,14 +329,14 @@ unsigned_number :
 
 function_call : hierarchical_identifier
  attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET{
-    ($4).insert(($4).begin(), VExprAstVar($1));
-    $$ = MakeNaryAst(voperator::FUNCTION_APP, $4 );
+    ($4).insert(($4).begin(), VExprAst::MakeVar($1));
+    $$ = VExprAst::MakeNaryAst(voperator::FUNCTION_APP, $4 );
  }
  |  hierarchical_identifier
  attribute_instances OPEN_BRACKET CLOSE_BRACKET {
-   VExprAstPtrVec tmp;
-   tmp.push_back(VExprAstVar($1));
-   $$ = MakeNaryAst(voperator::FUNCTION_APP, tmp );
+   VExprAst::VExprAstPtrVec tmp;
+   tmp.push_back(VExprAst::MakeVar($1));
+   $$ = VExprAst::MakeNaryAst(voperator::FUNCTION_APP, tmp );
  }
 ;
 
