@@ -7,17 +7,18 @@ set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 set(FLEX_INPUT  vexp_scanner.l)
-set(FLEX_OUTPUT vexp_scanner.c)
+set(FLEX_OUTPUT vexp_scanner.cpp)
 
 set(BISON_INPUT  vexp_parser.y)
 set(BISON_OUTPUT vexp_parser.cc)
+set(BISON_OUTPUT_HEADER vexp_parser.hh)
 
 # ------------------------------------------------------------------------
 
 
-message(STATUS "Parser Build Flags Debug:   ${CMAKE_C_FLAGS_DEBUG}")
+message(STATUS "Parser Build Flags Debug:   ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Parser Link Flags Debug:    ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
-message(STATUS "Parser Build Flags Release: ${CMAKE_C_FLAGS_RELEASE}")
+message(STATUS "Parser Build Flags Release: ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "Parser Link Flags Release:  ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 # ------------------------------------------------------------------------
@@ -25,7 +26,7 @@ message(STATUS "Parser Link Flags Release:  ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 add_custom_command(
   COMMAND ${BISON_EXECUTABLE}
   ARGS -y ${SOURCE_DIR}/${BISON_INPUT} -o ${BINARY_DIR}/${BISON_OUTPUT}
-  OUTPUT ${BINARY_DIR}/${BISON_OUTPUT}
+  OUTPUT ${BINARY_DIR}/${BISON_OUTPUT} ${BINARY_DIR}/${BISON_OUTPUT_HEADER}
   WORKING_DIRECTORY ${SOURCE_DIR} #/${BISON_INPUT}
   DEPENDS ${SOURCE_DIR}/${BISON_INPUT}
 )
@@ -35,7 +36,7 @@ add_custom_command(
   ARGS -o ${BINARY_DIR}/${FLEX_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
   OUTPUT ${BINARY_DIR}/${FLEX_OUTPUT}
   WORKING_DIRECTORY ${SOURCE_DIR} #/${FLEX_INPUT}
-  DEPENDS ${BINARY_DIR}/${BISON_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
+  DEPENDS ${BINARY_DIR}/${BISON_OUTPUT} ${BINARY_DIR}/${BISON_OUTPUT_HEADER} ${SOURCE_DIR}/${FLEX_INPUT}
 )
 
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
@@ -69,6 +70,12 @@ target_include_directories(${VEXP_LIBRARY_NAME}
   PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+
+target_include_directories(${VEXP_LIBRARY_NAME}
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${BINARY_DIR}>
 )
 
 # ------------------------------------------------------------------------

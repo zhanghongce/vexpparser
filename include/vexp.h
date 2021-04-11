@@ -110,9 +110,9 @@ public:
   virtual bool is_var()      const {return false;}
   virtual bool is_constant() const {return false;}
 
-protected:
   VExprAst(voperator op, const VExprAstPtrVec & c) : op_(op) , child_(c) {}
 
+protected:
   voperator op_;
   VExprAstPtrVec child_;
   InternalInfoPtr annotate_;
@@ -141,9 +141,11 @@ public:
   virtual bool is_leaf()     const override {return true;}
   virtual bool is_constant() const override {return true;}
   std::tuple<int, int, std::string> get_constant() const {return std::make_tuple(base_, width_, lit_);}
-protected:
+
   VExprAstConstant(int base, int width, const std::string & lit) :
      VExprAst(voperator::MK_CONST, {}), base_(base), width_(width), lit_ (lit) {}
+
+protected:
   int base_; // 0 (real number) , 2,4,8, 10,16
   int width_;
   std::string lit_; // the actual number part
@@ -159,11 +161,11 @@ public:
   virtual bool is_var()  const override {return true;}
   std::pair<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
   
-protected:
   VExprAstVar(const std::string & name, bool is_special_name) : 
     VExprAst(voperator::MK_VAR, {}), 
     name_(name), is_special_name_(is_special_name) {}
-    
+
+protected:
   std::string name_;
   bool is_special_name_; // #name#
 };

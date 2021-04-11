@@ -1,21 +1,57 @@
 %require "3.0"
-%language "c++"
+%skeleton "lalr1.cc" /* -*- C++ -*- */
 %verbose
 %locations
+%defines
+%define parser_class_name {Parser}
 %define api.value.type variant
 %define api.token.constructor
-%define api.token.prefix {TOK_}
+%define api.namespace {Vexp}
 %define parse.error verbose
 %define parse.trace
+%define api.token.prefix {TOK_}
 
-%{
+%code requires
+{
   #include <vexp.h>
   typedef VExprAst::VExprAstPtr VExprAstPtr;
-  extern int yylex (void);
+  
+  namespace Vexp {
+    class Scanner;
+    class Interpreter;
+  };
+}
 
-%}
+%code top
+{
+  #include "scanner.h"
+  #include "vexp_parser.hh"
+  #include "interpreter.h"
+  #include "location.hh"
+
+    // yylex() arguments are defined in parser.y
+    static Vexp::Parser::symbol_type yylex(Vexp::Scanner &scanner, Vexp::Interpreter &driver) {
+        return scanner.get_next_token();
+    }
+    
+    // you can accomplish the same thing by inlining the code using preprocessor
+    // x and y are same as in above static function
+    // #define yylex(x, y) scanner.get_next_token()
+    
+    using namespace Vexp;
+
+}
+
+%lex-param { Vexp::Scanner &scanner }
+%lex-param { Vexp::Interpreter &driver }
+%parse-param { Vexp::Scanner &scanner }
+%parse-param { Vexp::Interpreter &driver }
+
 
 /* Operators Precedence */
+
+%token END 0 "end of file"
+%token SEMICOLON "semicolon";
 
 %token <voperator> STAR
 %token <voperator> PLUS
@@ -79,7 +115,7 @@
 %token <std::string> STRING
 
 
-%nterm<VExprAst::VExprAstPtr> expression primary conditional_expression number function_call
+%nterm<VExprAst::VExprAstPtr> astroot expression primary conditional_expression number function_call
 %nterm<VExprAst::VExprAstPtr> concatenation multiple_concatenation
 %nterm<voperator> unary_operator
 %nterm<Attribute> attribute_instances list_of_attribute_instances attr_specs
@@ -116,6 +152,11 @@
 
 %%
 
+astroot : expression {
+    // TODO : set ast_root
+    driver.SetAstRoot($1);
+  } 
+;
 
 expression :
   primary {
@@ -466,16 +507,16 @@ text_macro_usage : MACRO_IDENTIFIER {
 
 /* A.8.6 Operators */
 
-unary_operator : PLUS    {$$ = $1;}
-               | MINUS   {$$ = $1;}
-               | L_NEG   {$$ = $1;}
-               | B_NEG   {$$ = $1;}
-               | B_AND   {$$ = $1;}
-               | B_NAND  {$$ = $1;}
-               | B_OR    {$$ = $1;}
-               | B_NOR   {$$ = $1;}
-               | B_XOR   {$$ = $1;}
-               | B_EQU   {$$ = $1;}
+unary_operator : PLUS    {$$ = voperator::PLUS;}
+               | MINUS   {$$ = voperator::MINUS;}
+               | L_NEG   {$$ = voperator::L_NEG;}
+               | B_NEG   {$$ = voperator::B_NEG;}
+               | B_AND   {$$ = voperator::B_AND;}
+               | B_NAND  {$$ = voperator::B_NAND;}
+               | B_OR    {$$ = voperator::B_OR;}
+               | B_NOR   {$$ = voperator::B_NOR;}
+               | B_XOR   {$$ = voperator::B_XOR;}
+               | B_EQU   {$$ = voperator::B_EQU;}
                ;
 
 

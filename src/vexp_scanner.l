@@ -5,11 +5,25 @@
 # include <cstring> // strerror
 # include <string>
 
+# include "scanner.h"
+# include "interpreter.h"
+# include "vexp_parser.hh"
+# include "location.hh"
+
 # define YY_NO_UNISTD_H
+
+// Original yyterminate() macro returns int. Since we're using Bison 3 variants
+// as tokens, we must redefine it to change type from `int` to `Parser::semantic_type`
+# define yyterminate() Vexp::Parser::make_END(Vexp::location());
+
+# define YY_USER_ACTION  m_driver.increaseLocation (yyleng);
 
 %}
 
-%option noyywrap nounput noinput batch debug nounistd
+%option noyywrap nodefault
+%option c++
+%option yyclass="Scanner"
+%option prefix="Vexp_"
 
 /* Single character tokens */
 
@@ -91,7 +105,8 @@ COMMENT_END         "*/"
 
 %x in_comment
 
-/* Strings */
+/* Strings : this is not a good definition */
+/* you should have used state rather than RE */
 
 STRING              \".*\"
 
@@ -127,22 +142,11 @@ B_NAND              "~&"
 B_NOR               "~|"
 TERNARY             "?"
 
-%{
-  // Code run each time a pattern is matched.
-  # define YY_USER_ACTION  loc.columns (yyleng);
-%}
-
 %%
 
-%{
-  // A handy shortcut to the location held by the driver.
-  yy::location& loc = drv.location;
-  // Code run each time yylex is called.
-  loc.step ();
-%}
 
-{ATTRIBUTE_START}      { return yy::parser::make_ATTRIBUTE_START(loc);}
-{ATTRIBUTE_END}        { return yy::parser::make_ATTRIBUTE_END(loc); }
+{ATTRIBUTE_START}      { return Vexp::Parser::make_ATTRIBUTE_START(Vexp::location());}
+{ATTRIBUTE_END}        { return Vexp::Parser::make_ATTRIBUTE_END(Vexp::location()); }
 
 {COMMENT_LINE}         { /* IGNORE */ }
 {COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
@@ -151,80 +155,82 @@ TERNARY             "?"
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
 
-{AT}                   { return yy::parser::make_AT               ( voperator::AT, loc       ) ; /*this should be an operator*/ }
-{COMMA}                { return yy::parser::make_COMMA            ( loc                      ) ;}
-{HASH}                 { return yy::parser::make_HASH             ( loc                      ) ;}
-{DOT}                  { return yy::parser::make_DOT              ( loc                      ) ;}
-{COLON}                { return yy::parser::make_COLON            ( loc                      ) ;}
-{IDX_PRT_SEL_PLUS}     { return yy::parser::make_IDX_PRT_SEL_PLUS ( loc                      ) ;}
-{IDX_PRT_SEL_MINUS}    { return yy::parser::make_IDX_PRT_SEL_MINUS( loc                      ) ;}
-{SEMICOLON}            { return yy::parser::make_SEMICOLON        ( loc                      ) ;}
-{OPEN_BRACKET}         { return yy::parser::make_OPEN_BRACKET     ( loc                      ) ;}
-{CLOSE_BRACKET}        { return yy::parser::make_CLOSE_BRACKET    ( loc                      ) ;}
-{OPEN_SQ_BRACKET}      { return yy::parser::make_OPEN_SQ_BRACKET  ( loc                      ) ;}
-{CLOSE_SQ_BRACKET}     { return yy::parser::make_CLOSE_SQ_BRACKET ( loc                      ) ;}
-{OPEN_SQ_BRACE}        { return yy::parser::make_OPEN_SQ_BRACE    ( loc                      ) ;}
-{CLOSE_SQ_BRACE}       { return yy::parser::make_CLOSE_SQ_BRACE   ( loc                      ) ;}
-{STAR}                 { return yy::parser::make_STAR             ( voperator::STAR    , loc ) ;}
-{PLUS}                 { return yy::parser::make_PLUS             ( voperator::PLUS    , loc ) ;}
-{MINUS}                { return yy::parser::make_MINUS            ( voperator::MINUS   , loc ) ;}
-{ASL}                  { return yy::parser::make_ASL              ( voperator::ASL     , loc ) ;}
-{ASR}                  { return yy::parser::make_ASR              ( voperator::ASR     , loc ) ;}
-{LSL}                  { return yy::parser::make_LSL              ( voperator::LSL     , loc ) ;}
-{LSR}                  { return yy::parser::make_LSR              ( voperator::LSR     , loc ) ;}
-{DIV}                  { return yy::parser::make_DIV              ( voperator::DIV     , loc ) ;}
-{POW}                  { return yy::parser::make_POW              ( voperator::POW     , loc ) ;}
-{MOD}                  { return yy::parser::make_MOD              ( voperator::MOD     , loc ) ;}
-{GTE}                  { return yy::parser::make_GTE              ( voperator::GTE     , loc ) ;}
-{LTE}                  { return yy::parser::make_LTE              ( voperator::LTE     , loc ) ;}
-{GT}                   { return yy::parser::make_GT               ( voperator::GT      , loc ) ;}
-{LT}                   { return yy::parser::make_LT               ( voperator::LT      , loc ) ;}
-{L_NEG}                { return yy::parser::make_L_NEG            ( voperator::L_NEG   , loc ) ;}
-{L_AND}                { return yy::parser::make_L_AND            ( voperator::L_AND   , loc ) ;}
-{L_OR}                 { return yy::parser::make_L_OR             ( voperator::L_OR    , loc ) ;}
-{C_EQ}                 { return yy::parser::make_C_EQ             ( voperator::C_EQ    , loc ) ;}
-{L_EQ}                 { return yy::parser::make_L_EQ             ( voperator::L_EQ    , loc ) ;}
-{C_NEQ}                { return yy::parser::make_C_NEQ            ( voperator::C_NEQ   , loc ) ;}
-{L_NEQ}                { return yy::parser::make_L_NEQ            ( voperator::L_NEQ   , loc ) ;}
-{B_NEG}                { return yy::parser::make_B_NEG            ( voperator::B_NEG   , loc ) ;}
-{B_AND}                { return yy::parser::make_B_AND            ( voperator::B_AND   , loc ) ;}
-{B_OR}                 { return yy::parser::make_B_OR             ( voperator::B_OR    , loc ) ;}
-{B_XOR}                { return yy::parser::make_B_XOR            ( voperator::B_XOR   , loc ) ;}
-{B_EQU}                { return yy::parser::make_B_EQU            ( voperator::B_EQU   , loc ) ;}
-{B_NAND}               { return yy::parser::make_B_NAND           ( voperator::B_NAND  , loc ) ;}
-{B_NOR}                { return yy::parser::make_B_NOR            ( voperator::B_NOR   , loc ) ;}
-{TERNARY}              { return yy::parser::make_TERNAR           ( voperator::TERNARY , loc ) ;}
-{EQ}                   { return yy::parser::make_EQ               ( loc                      ) ; /*this is just a symbol not OP*/ }
+{AT}                   { return Vexp::Parser::make_AT               ( voperator::AT, Vexp::location()       ) ; /*this should be an operator*/ }
+{COMMA}                { return Vexp::Parser::make_COMMA            ( Vexp::location()                      ) ;}
+{HASH}                 { return Vexp::Parser::make_HASH             ( Vexp::location()                      ) ;}
+{DOT}                  { return Vexp::Parser::make_DOT              ( Vexp::location()                      ) ;}
+{COLON}                { return Vexp::Parser::make_COLON            ( Vexp::location()                      ) ;}
+{IDX_PRT_SEL_PLUS}     { return Vexp::Parser::make_IDX_PRT_SEL_PLUS ( Vexp::location()                      ) ;}
+{IDX_PRT_SEL_MINUS}    { return Vexp::Parser::make_IDX_PRT_SEL_MINUS( Vexp::location()                      ) ;}
+{SEMICOLON}            { return Vexp::Parser::make_SEMICOLON        ( Vexp::location()                      ) ;}
+{OPEN_BRACKET}         { return Vexp::Parser::make_OPEN_BRACKET     ( Vexp::location()                      ) ;}
+{CLOSE_BRACKET}        { return Vexp::Parser::make_CLOSE_BRACKET    ( Vexp::location()                      ) ;}
+{OPEN_SQ_BRACKET}      { return Vexp::Parser::make_OPEN_SQ_BRACKET  ( Vexp::location()                      ) ;}
+{CLOSE_SQ_BRACKET}     { return Vexp::Parser::make_CLOSE_SQ_BRACKET ( Vexp::location()                      ) ;}
+{OPEN_SQ_BRACE}        { return Vexp::Parser::make_OPEN_SQ_BRACE    ( Vexp::location()                      ) ;}
+{CLOSE_SQ_BRACE}       { return Vexp::Parser::make_CLOSE_SQ_BRACE   ( Vexp::location()                      ) ;}
+{STAR}                 { return Vexp::Parser::make_STAR             ( voperator::STAR    , Vexp::location() ) ;}
+{PLUS}                 { return Vexp::Parser::make_PLUS             ( voperator::PLUS    , Vexp::location() ) ;}
+{MINUS}                { return Vexp::Parser::make_MINUS            ( voperator::MINUS   , Vexp::location() ) ;}
+{ASL}                  { return Vexp::Parser::make_ASL              ( voperator::ASL     , Vexp::location() ) ;}
+{ASR}                  { return Vexp::Parser::make_ASR              ( voperator::ASR     , Vexp::location() ) ;}
+{LSL}                  { return Vexp::Parser::make_LSL              ( voperator::LSL     , Vexp::location() ) ;}
+{LSR}                  { return Vexp::Parser::make_LSR              ( voperator::LSR     , Vexp::location() ) ;}
+{DIV}                  { return Vexp::Parser::make_DIV              ( voperator::DIV     , Vexp::location() ) ;}
+{POW}                  { return Vexp::Parser::make_POW              ( voperator::POW     , Vexp::location() ) ;}
+{MOD}                  { return Vexp::Parser::make_MOD              ( voperator::MOD     , Vexp::location() ) ;}
+{GTE}                  { return Vexp::Parser::make_GTE              ( voperator::GTE     , Vexp::location() ) ;}
+{LTE}                  { return Vexp::Parser::make_LTE              ( voperator::LTE     , Vexp::location() ) ;}
+{GT}                   { return Vexp::Parser::make_GT               ( voperator::GT      , Vexp::location() ) ;}
+{LT}                   { return Vexp::Parser::make_LT               ( voperator::LT      , Vexp::location() ) ;}
+{L_NEG}                { return Vexp::Parser::make_L_NEG            ( voperator::L_NEG   , Vexp::location() ) ;}
+{L_AND}                { return Vexp::Parser::make_L_AND            ( voperator::L_AND   , Vexp::location() ) ;}
+{L_OR}                 { return Vexp::Parser::make_L_OR             ( voperator::L_OR    , Vexp::location() ) ;}
+{C_EQ}                 { return Vexp::Parser::make_C_EQ             ( voperator::C_EQ    , Vexp::location() ) ;}
+{L_EQ}                 { return Vexp::Parser::make_L_EQ             ( voperator::L_EQ    , Vexp::location() ) ;}
+{C_NEQ}                { return Vexp::Parser::make_C_NEQ            ( voperator::C_NEQ   , Vexp::location() ) ;}
+{L_NEQ}                { return Vexp::Parser::make_L_NEQ            ( voperator::L_NEQ   , Vexp::location() ) ;}
+{B_NEG}                { return Vexp::Parser::make_B_NEG            ( voperator::B_NEG   , Vexp::location() ) ;}
+{B_AND}                { return Vexp::Parser::make_B_AND            ( voperator::B_AND   , Vexp::location() ) ;}
+{B_OR}                 { return Vexp::Parser::make_B_OR             ( voperator::B_OR    , Vexp::location() ) ;}
+{B_XOR}                { return Vexp::Parser::make_B_XOR            ( voperator::B_XOR   , Vexp::location() ) ;}
+{B_EQU}                { return Vexp::Parser::make_B_EQU            ( voperator::B_EQU   , Vexp::location() ) ;}
+{B_NAND}               { return Vexp::Parser::make_B_NAND           ( voperator::B_NAND  , Vexp::location() ) ;}
+{B_NOR}                { return Vexp::Parser::make_B_NOR            ( voperator::B_NOR   , Vexp::location() ) ;}
+{TERNARY}              { return Vexp::Parser::make_TERNARY          ( voperator::TERNARY , Vexp::location() ) ;}
+{EQ}                   { return Vexp::Parser::make_EQ               ( Vexp::location()                      ) ; /*this is just a symbol not OP*/ }
 
-{BASE_DECIMAL}         {return yy::parser::make_DEC_BASE(loc);}
-{BASE_HEX}             {BEGIN(in_hex_val); return yy::parser::make_HEX_BASE(loc);}
-{BASE_OCTAL}           {BEGIN(in_oct_val); return yy::parser::make_OCT_BASE(loc);}
-{BASE_BINARY}          {BEGIN(in_bin_val); return yy::parser::make_BIN_BASE(loc);}
+{BASE_DECIMAL}         {return Vexp::Parser::make_DEC_BASE(Vexp::location());}
+{BASE_HEX}             {BEGIN(in_hex_val); return Vexp::Parser::make_HEX_BASE(Vexp::location());}
+{BASE_OCTAL}           {BEGIN(in_oct_val); return Vexp::Parser::make_OCT_BASE(Vexp::location());}
+{BASE_BINARY}          {BEGIN(in_bin_val); return Vexp::Parser::make_BIN_BASE(Vexp::location());}
 
-<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); return yy::parser::make_BIN_VALUE(yytext,loc); }
-<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); return yy::parser::make_OCT_VALUE(yytext,loc); }
-<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); return yy::parser::make_HEX_VALUE(yytext,loc); }
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); return Vexp::Parser::make_BIN_VALUE(yytext,Vexp::location()); }
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); return Vexp::Parser::make_OCT_VALUE(yytext,Vexp::location()); }
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); return Vexp::Parser::make_HEX_VALUE(yytext,Vexp::location()); }
 
-{NUM_REAL}             { return yy::parser::make_NUM_REAL(yytext, loc); }
-{NUM_UNSIGNED}         { return yy::parser::make_UNSIGNED_NUMBER(yytext, loc); }
+{NUM_REAL}             { return Vexp::Parser::make_NUM_REAL(yytext, Vexp::location()); }
+{NUM_UNSIGNED}         { return Vexp::Parser::make_UNSIGNED_NUMBER(yytext, Vexp::location()); }
 
 {MACRO_IDENTIFIER}     {
-    return yy::parser::make_MACRO_IDENTIFIER(yytext, loc);
+    return Vexp::Parser::make_MACRO_IDENTIFIER(yytext, Vexp::location());
 }
 
 {ESCAPED_ID}           {
-    return yy::parser::make_ESCAPED_ID(yytext, loc);
+    return Vexp::Parser::make_ESCAPED_ID(yytext, Vexp::location());
 }
 {SIMPLE_ID}            {
-    return yy::parser::make_SIMPLE_ID(yytext, loc);
+    return Vexp::Parser::make_SIMPLE_ID(yytext, Vexp::location());
 }
 
-{STRING}               { return yy::parser::make_STRING(yytext, loc);}
+{STRING}               { return Vexp::Parser::make_STRING(yytext, Vexp::location());}
 
-<*>{BLANK}+          { loc.step (); }
-<*>{NEWLINE}+        { loc.lines (yyleng); loc.step (); }
+<*>{BLANK}+          { /*loc.step ();*/ }
+<*>{NEWLINE}+        { /*loc.lines (yyleng); loc.step ();*/ /*note: you can count linebreak here*/ }
 
 <<EOF>>                { return yyterminate();}
 .                      {
-    EMIT_TOKEN(ANY);
+    std::cout << "[VexpParser] : Unknown character ["<< yytext <<"]" << std::endl;
 }
+
+%%
