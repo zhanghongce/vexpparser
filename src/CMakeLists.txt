@@ -47,6 +47,7 @@ SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
 set(VEXP_PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
                    ${BINARY_DIR}/${BISON_OUTPUT}
                    ${SOURCE_DIR}/vexp.cc
+                   ${SOURCE_DIR}/interpreter.cpp
 )
 
 add_library(${VEXP_LIBRARY_NAME} ${VEXP_PARSER_LIB_SRC})

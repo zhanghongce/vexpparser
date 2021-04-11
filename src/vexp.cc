@@ -195,3 +195,11 @@ void Attribute::Append(const Attribute & other) {
   }
 }
 
+
+int width_to_int(const std::string & s) { // convert width to int
+  try {
+    return std::stoi(s, NULL, 10);
+  } catch (const std::exception& e) {
+    return 0;
+  }
+}

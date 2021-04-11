@@ -466,10 +466,10 @@ hierarchical_identifier :
   }
 | hierarchical_identifier DOT simple_identifier{
   // text_macro_usage
-      $$ = $1 + $3;
+      $$ = $1 + "." + $3;
   }
 | hierarchical_identifier DOT escaped_identifier{
-      $$ = $1 + $3;
+      $$ = $1 + "." + $3;
   }
 ;
 
@@ -522,3 +522,12 @@ unary_operator : PLUS    {$$ = voperator::PLUS;}
 
 %%
 
+// Bison expects us to provide implementation - otherwise linker complains
+void Vexp::Parser::error(const location &loc , const std::string &message) {
+        
+        // Location should be initialized inside scanner action, but is not in this example.
+        // Let's grab location directly from driver class.
+	// cout << "Error: " << message << endl << "Location: " << loc << endl;
+	
+        std::cout << "Error: " << message << std::endl << "Error location: " << driver.location() << std::endl;
+}

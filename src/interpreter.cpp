@@ -27,7 +27,6 @@
  */
 
 #include "interpreter.h"
-#include "command.h"
 
 #include <sstream>
 
@@ -56,9 +55,9 @@ void Interpreter::clear() {
 std::string Interpreter::str() const {
     std::stringstream s;
     if (m_ast.get()) {
-        s << *m_ast << endl;
+        s << m_ast;
     } else {
-        s << "(NULL)" << endl;
+        s << "(NULL)";
     }
     return s.str();
 }

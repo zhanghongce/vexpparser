@@ -39,10 +39,6 @@
 
 namespace Vexp {
 
-// forward declare our simplistic AST node class so we
-// can declare container for it without the header
-class Command;
-
 /**
  * This class is the interface for our scanner/lexer. The end user
  * is expected to use this. It drives scanner/lexer, keeps
