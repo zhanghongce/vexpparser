@@ -69,7 +69,11 @@ enum class voperator {
   REPEAT,
   /*Placeholder*/
   MK_CONST,
-  MK_VAR
+  MK_VAR,
+
+  /*Add new ones here*/
+  DELAY
+
    };
 
 class AbstractInternalInfo {
@@ -100,6 +104,8 @@ public:
   static VExprAstPtr MakeSpecialName(const std::string & name); // # name #
   static VExprAstPtr MakeVar(const std::string & name); // hierarchy names?
   static VExprAstPtr MakeUnaryAst(voperator op, const VExprAstPtr & c);
+  static VExprAstPtr MakeUnaryParamAst(voperator op, const VExprAstPtr & c, const std::vector<int> & param);
+  
   static VExprAstPtr MakeBinaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2);
   static VExprAstPtr MakeTernaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const VExprAstPtr & c3);
   static VExprAstPtr MakeNaryAst(voperator op, const VExprAstPtrVec & children);
@@ -115,6 +121,7 @@ public:
 protected:
   voperator op_;
   VExprAstPtrVec child_;
+  std::vector<int> parameter_;
   InternalInfoPtr annotate_;
 };
 

@@ -30,11 +30,22 @@ VExprAst::VExprAstPtr VExprAst::MakeUnaryAst(voperator op, const VExprAstPtr & c
     VExprAstPtrVec tmp({c});
     return std::make_shared<VExprAst>(op , tmp);
   }
-  throw VexpException(ExceptionCause::OpNaryNotMatched);
+  throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeUnaryAst");
   return NULL;
 }
 
 
+VExprAst::VExprAstPtr VExprAst::MakeUnaryParamAst(voperator op, const VExprAstPtr & c, const std::vector<int> & param) {
+  if (op == voperator::DELAY     // "^~"|"~^"
+    ) {
+    VExprAstPtrVec tmp({c});
+    auto tmpptr = std::make_shared<VExprAst>(op , tmp);
+    tmpptr->parameter_ = param; // copy parameters
+    return tmpptr;
+  }
+  throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeUnaryParamAst");
+  return NULL;
+}
 
 VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2) {
   if (op == voperator::REPEAT     || // {x{a}}
@@ -73,7 +84,7 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & 
     VExprAstPtrVec tmp({c1,c2});
     return std::make_shared<VExprAst>(op , tmp);
   }
-  throw VexpException(ExceptionCause::OpNaryNotMatched);
+  throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeBinaryAst");
   return NULL;
 }
 
@@ -88,7 +99,7 @@ VExprAst::VExprAstPtr VExprAst::MakeTernaryAst(voperator op, const VExprAstPtr &
     VExprAstPtrVec tmp({c1,c2,c3});
     return std::make_shared<VExprAst>(op , tmp);
   }
-  throw VexpException(ExceptionCause::OpNaryNotMatched);
+  throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeTernaryAst");
   return NULL;
 }
 
@@ -99,7 +110,7 @@ VExprAst::VExprAstPtr VExprAst::MakeNaryAst(voperator op, const VExprAstPtrVec &
     ) {
     return std::make_shared<VExprAst>(op , children);
   }
-  throw VexpException(ExceptionCause::OpNaryNotMatched);
+  throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeNaryAst");
   return NULL;
 }
 
@@ -145,7 +156,9 @@ std::vector<std::string> voperator_str_vec = {
   "REPEAT",
   /*Placeholder*/
   "MK_CONST",
-  "MK_VAR"
+  "MK_VAR",
+
+  "DELAY"
 };
 
 std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) {
@@ -157,6 +170,12 @@ std::ostream & operator<<(std::ostream & os, const VExprAst::VExprAstPtr & obj) 
     else
       os << "unknown_op";
     os << " ";
+
+    if (! (obj->parameter_.empty())) {
+      for (const auto & p : obj->parameter_)
+        os << ":"<<p<<" ";
+    }
+
     if (obj->is_var()) {
       auto vptr = VExprAstVar::cast_ptr(obj);
       assert(vptr);

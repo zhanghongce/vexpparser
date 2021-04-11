@@ -33,6 +33,7 @@ BLANK               [ \t\r]
 AT                  "@"
 COMMA               ","
 HASH                "#"
+DELAY               "##"
 DOT                 "."
 EQ                  "="
 COLON               ":"
@@ -157,6 +158,7 @@ TERNARY             "?"
 
 {AT}                   { return Vexp::Parser::make_AT               ( voperator::AT, Vexp::location()       ) ; /*this should be an operator*/ }
 {COMMA}                { return Vexp::Parser::make_COMMA            ( Vexp::location()                      ) ;}
+{DELAY}                { return Vexp::Parser::make_DELAY            ( Vexp::location()                      ) ;}
 {HASH}                 { return Vexp::Parser::make_HASH             ( Vexp::location()                      ) ;}
 {DOT}                  { return Vexp::Parser::make_DOT              ( Vexp::location()                      ) ;}
 {COLON}                { return Vexp::Parser::make_COLON            ( Vexp::location()                      ) ;}

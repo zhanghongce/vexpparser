@@ -103,6 +103,7 @@
 %token ATTRIBUTE_END
 %token EQ
 %token DOT
+%token DELAY
 
 %token <std::string> SIMPLE_ID
 %token <std::string> ESCAPED_ID
@@ -144,6 +145,8 @@
 %left   STAR DIV MOD
 %left   POW
 %nonassoc AT                    /* Runtime error */
+%nonassoc DELAY                 /* Runtime error */
+
 /* turn out the followings are not necessary */
 /* %left   OPEN_BRACKET */
 /* %left   OPEN_SQ_BRACKET */
@@ -164,6 +167,11 @@ expression :
   }
 | unary_operator attribute_instances primary{
     $$ = VExprAst::MakeUnaryAst( $1, $3 );
+  }
+| expression DELAY UNSIGNED_NUMBER {
+    std::vector<int> param;
+    param.push_back( width_to_int($3) );
+    $$ = VExprAst::MakeUnaryParamAst(voperator::DELAY , $1, param);
   }
 | expression AT  attribute_instances expression{
     // this is the A@B shortcut
