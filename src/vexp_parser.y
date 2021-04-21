@@ -14,7 +14,7 @@
 %code requires
 {
   #include <vexp.h>
-  typedef VExprAst::VExprAstPtr VExprAstPtr;
+  typedef verilog_expr::VExprAst::VExprAstPtr VExprAstPtr;
   
   namespace Vexp {
     class Scanner;
@@ -53,36 +53,36 @@
 %token END 0 "end of file"
 %token SEMICOLON "semicolon";
 
-%token <voperator> STAR
-%token <voperator> PLUS
-%token <voperator> MINUS
-%token <voperator> ASL     
-%token <voperator> ASR     
-%token <voperator> LSL     
-%token <voperator> LSR     
-%token <voperator> DIV     
-%token <voperator> POW     
-%token <voperator> MOD     
-%token <voperator> GTE     
-%token <voperator> LTE     
-%token <voperator> GT      
-%token <voperator> LT      
-%token <voperator> L_NEG   
-%token <voperator> L_AND   
-%token <voperator> L_OR    
-%token <voperator> C_EQ    
-%token <voperator> L_EQ    
-%token <voperator> C_NEQ   
-%token <voperator> L_NEQ   
-%token <voperator> B_NEG   
-%token <voperator> B_AND   
-%token <voperator> B_OR    
-%token <voperator> B_XOR   
-%token <voperator> B_EQU   
-%token <voperator> B_NAND  
-%token <voperator> B_NOR   
-%token <voperator> TERNARY 
-%token <voperator> AT 
+%token <verilog_expr::voperator> STAR
+%token <verilog_expr::voperator> PLUS
+%token <verilog_expr::voperator> MINUS
+%token <verilog_expr::voperator> ASL     
+%token <verilog_expr::voperator> ASR     
+%token <verilog_expr::voperator> LSL     
+%token <verilog_expr::voperator> LSR     
+%token <verilog_expr::voperator> DIV     
+%token <verilog_expr::voperator> POW     
+%token <verilog_expr::voperator> MOD     
+%token <verilog_expr::voperator> GTE     
+%token <verilog_expr::voperator> LTE     
+%token <verilog_expr::voperator> GT      
+%token <verilog_expr::voperator> LT      
+%token <verilog_expr::voperator> L_NEG   
+%token <verilog_expr::voperator> L_AND   
+%token <verilog_expr::voperator> L_OR    
+%token <verilog_expr::voperator> C_EQ    
+%token <verilog_expr::voperator> L_EQ    
+%token <verilog_expr::voperator> C_NEQ   
+%token <verilog_expr::voperator> L_NEQ   
+%token <verilog_expr::voperator> B_NEG   
+%token <verilog_expr::voperator> B_AND   
+%token <verilog_expr::voperator> B_OR    
+%token <verilog_expr::voperator> B_XOR   
+%token <verilog_expr::voperator> B_EQU   
+%token <verilog_expr::voperator> B_NAND  
+%token <verilog_expr::voperator> B_NOR   
+%token <verilog_expr::voperator> TERNARY 
+%token <verilog_expr::voperator> AT 
 
 %token OPEN_SQ_BRACKET
 %token CLOSE_SQ_BRACKET
@@ -116,17 +116,17 @@
 %token <std::string> STRING
 
 
-%nterm<VExprAst::VExprAstPtr> astroot expression primary conditional_expression number function_call
-%nterm<VExprAst::VExprAstPtr> concatenation multiple_concatenation
-%nterm<voperator> unary_operator
-%nterm<Attribute> attribute_instances list_of_attribute_instances attr_specs
+%nterm<verilog_expr::VExprAst::VExprAstPtr> astroot expression primary conditional_expression number function_call
+%nterm<verilog_expr::VExprAst::VExprAstPtr> concatenation multiple_concatenation
+%nterm<verilog_expr::voperator> unary_operator
+%nterm<verilog_expr::Attribute> attribute_instances list_of_attribute_instances attr_specs
 %nterm<std::string> unsigned_number
 %nterm<std::string> hierarchical_identifier_special_name text_macro_usage
 %nterm<std::string> identifier simple_identifier escaped_identifier attr_name
 %nterm<std::string> string
 %nterm<std::string> hierarchical_identifier
-%nterm<VExprAst::VExprAstPtrVec> expressions
-%nterm<SuffixOp>  sq_bracket_expression
+%nterm<verilog_expr::VExprAst::VExprAstPtrVec> expressions
+%nterm<verilog_expr::SuffixOp>  sq_bracket_expression
 
 /* Operator Precedence */
 
@@ -166,94 +166,94 @@ expression :
     $$ = $1;
   }
 | unary_operator attribute_instances primary{
-    $$ = VExprAst::MakeUnaryAst( $1, $3 );
+    $$ = verilog_expr::VExprAst::MakeUnaryAst( $1, $3 );
   }
 | expression DELAY UNSIGNED_NUMBER {
     std::vector<int> param;
-    param.push_back( width_to_int($3) );
-    $$ = VExprAst::MakeUnaryParamAst(voperator::DELAY , $1, param);
+    param.push_back( verilog_expr::width_to_int($3) );
+    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY , $1, param);
   }
 | expression AT  attribute_instances expression{
     // this is the A@B shortcut
-    $$ = VExprAst::MakeBinaryAst(voperator::AT, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::AT, $1, $4);
   }
 | expression PLUS  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::PLUS, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::PLUS, $1, $4);
   }
 | expression MINUS attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::MINUS, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::MINUS, $1, $4);
   }
 | expression STAR  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::STAR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::STAR, $1, $4);
   }
 | expression DIV   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::DIV, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::DIV, $1, $4);
   }
 | expression MOD   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::MOD, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::MOD, $1, $4);
   }
 | expression L_EQ  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::L_EQ, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_EQ, $1, $4);
   }
 | expression L_NEQ attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::L_NEQ, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_NEQ, $1, $4);
   }
 | expression C_EQ  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::C_EQ, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::C_EQ, $1, $4);
   }
 | expression C_NEQ attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::C_NEQ, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::C_NEQ, $1, $4);
   }
 | expression L_AND attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::L_AND, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_AND, $1, $4);
   }
 | expression L_OR  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::L_OR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_OR, $1, $4);
   }
 | expression POW   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::POW, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::POW, $1, $4);
   }
 | expression LT    attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::LT, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::LT, $1, $4);
   }
 | expression LTE   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::LTE, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::LTE, $1, $4);
   }
 | expression GT    attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::GT, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::GT, $1, $4);
   }
 | expression GTE   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::GTE, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::GTE, $1, $4);
   }
 | expression B_AND attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_AND, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_AND, $1, $4);
   }
 | expression B_OR  attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_OR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_OR, $1, $4);
   }
 | expression B_XOR attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_XOR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_XOR, $1, $4);
   }
 | expression B_NOR attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_NOR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_NOR, $1, $4);
   }
 | expression B_NAND attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_NAND, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_NAND, $1, $4);
   }
 | expression B_EQU attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::B_EQU, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_EQU, $1, $4);
   }
 | expression LSR   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::LSR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::LSR, $1, $4);
   }
 | expression LSL   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::LSL, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::LSL, $1, $4);
   }
 | expression ASR   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::ASR, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::ASR, $1, $4);
   }
 | expression ASL   attribute_instances expression{
-    $$ = VExprAst::MakeBinaryAst(voperator::ASL, $1, $4);
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::ASL, $1, $4);
   }
 | conditional_expression {$$=$1;}
 
@@ -269,7 +269,7 @@ expression :
 
 conditional_expression : 
   expression TERNARY attribute_instances expression COLON expression{
-    $$ = VExprAst::MakeTernaryAst( voperator::TERNARY, $1,$4,$6);
+    $$ = verilog_expr::VExprAst::MakeTernaryAst( verilog_expr::voperator::TERNARY, $1,$4,$6);
   }
 ;
 
@@ -279,20 +279,20 @@ primary :
       $$ = $1;
   }
 | hierarchical_identifier {
-      $$ = VExprAst::MakeVar($1);
+      $$ = verilog_expr::VExprAst::MakeVar($1);
   }
 | primary sq_bracket_expression {
-    if ( $2.op == voperator::INDEX ) {
+    if ( $2.op == verilog_expr::voperator::INDEX ) {
       // binary operation
-      $$ = VExprAst::MakeBinaryAst($2.op, $1, $2.ranges.at(0));
+      $$ = verilog_expr::VExprAst::MakeBinaryAst($2.op, $1, $2.ranges.at(0));
     } else {
       // ternary operation
-      $$ = VExprAst::MakeTernaryAst($2.op, $1, $2.ranges.at(0), $2.ranges.at(1));
+      $$ = verilog_expr::VExprAst::MakeTernaryAst($2.op, $1, $2.ranges.at(0), $2.ranges.at(1));
     }
   }
-| string {$$ = VExprAst::MakeSpecialName($1);}
+| string {$$ = verilog_expr::VExprAst::MakeSpecialName($1);}
 | hierarchical_identifier_special_name {
-  $$ = VExprAst::MakeSpecialName($1);
+  $$ = verilog_expr::VExprAst::MakeSpecialName($1);
 }
 | concatenation{
     $$ = $1;
@@ -319,21 +319,21 @@ hierarchical_identifier_special_name :
 
 concatenation : 
   OPEN_SQ_BRACE expressions CLOSE_SQ_BRACE{
-   $$ = VExprAst::MakeNaryAst(voperator::CONCAT, $2 );
+   $$ = verilog_expr::VExprAst::MakeNaryAst(verilog_expr::voperator::CONCAT, $2 );
   }
 ;
 
 
 multiple_concatenation :
   OPEN_SQ_BRACE expression concatenation CLOSE_SQ_BRACE{
-    $$ =  VExprAst::MakeBinaryAst(voperator::REPEAT, $2, $3 );
+    $$ =  verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::REPEAT, $2, $3 );
   }
 ;
 
 
 number :
   NUM_REAL{
-    $$ = VExprAst::MakeConstant(0,0,$1);
+    $$ = verilog_expr::VExprAst::MakeConstant(0,0,$1);
   }
 | BIN_BASE BIN_VALUE {
   // TODO : 1. auto width determine
@@ -341,31 +341,31 @@ number :
   //        3. check?
   // NOTE: you can also add internal translation annotations
   //       when handling this pass
-    $$ = VExprAst::MakeConstant(2, 0 ,$2);
+    $$ = verilog_expr::VExprAst::MakeConstant(2, 0 ,$2);
 }
 | HEX_BASE HEX_VALUE {
-    $$ = VExprAst::MakeConstant(16, 0 ,$2);
+    $$ = verilog_expr::VExprAst::MakeConstant(16, 0 ,$2);
 }
 | OCT_BASE OCT_VALUE {
-    $$ = VExprAst::MakeConstant(8, 0 ,$2);
+    $$ = verilog_expr::VExprAst::MakeConstant(8, 0 ,$2);
 }
 | DEC_BASE UNSIGNED_NUMBER {
-    $$ = VExprAst::MakeConstant(10, 0 ,$2);
+    $$ = verilog_expr::VExprAst::MakeConstant(10, 0 ,$2);
 }
 | UNSIGNED_NUMBER BIN_BASE BIN_VALUE {
-    $$ = VExprAst::MakeConstant(2, width_to_int($1) ,$3);
+    $$ = verilog_expr::VExprAst::MakeConstant(2, verilog_expr::width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER HEX_BASE HEX_VALUE {
-    $$ = VExprAst::MakeConstant(16, width_to_int($1) ,$3);
+    $$ = verilog_expr::VExprAst::MakeConstant(16, verilog_expr::width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER OCT_BASE OCT_VALUE {
-    $$ = VExprAst::MakeConstant(8, width_to_int($1) ,$3);
+    $$ = verilog_expr::VExprAst::MakeConstant(8, verilog_expr::width_to_int($1) ,$3);
 }
 | UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
-    $$ = VExprAst::MakeConstant(10, width_to_int($1) ,$3);
+    $$ = verilog_expr::VExprAst::MakeConstant(10, verilog_expr::width_to_int($1) ,$3);
 }
 | unsigned_number {
-    $$ = VExprAst::MakeConstant(0,0,$1);}
+    $$ = verilog_expr::VExprAst::MakeConstant(0,0,$1);}
 ;
 
 
@@ -378,21 +378,21 @@ unsigned_number :
 
 function_call : hierarchical_identifier
  attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET{
-    ($4).insert(($4).begin(), VExprAst::MakeVar($1));
-    $$ = VExprAst::MakeNaryAst(voperator::FUNCTION_APP, $4 );
+    ($4).insert(($4).begin(), verilog_expr::VExprAst::MakeVar($1));
+    $$ = verilog_expr::VExprAst::MakeNaryAst(verilog_expr::voperator::FUNCTION_APP, $4 );
  }
  |  hierarchical_identifier
  attribute_instances OPEN_BRACKET CLOSE_BRACKET {
-   VExprAst::VExprAstPtrVec tmp;
-   tmp.push_back(VExprAst::MakeVar($1));
-   $$ = VExprAst::MakeNaryAst(voperator::FUNCTION_APP, tmp );
+   verilog_expr::VExprAst::VExprAstPtrVec tmp;
+   tmp.push_back(verilog_expr::VExprAst::MakeVar($1));
+   $$ = verilog_expr::VExprAst::MakeNaryAst(verilog_expr::voperator::FUNCTION_APP, tmp );
  }
 ;
 
 
 expressions :
   expression {
-   $$ = VExprAst::VExprAstPtrVec();
+   $$ = verilog_expr::VExprAst::VExprAstPtrVec();
    ($$).push_back($1);
   }
 | expressions COMMA expression{
@@ -406,26 +406,26 @@ expressions :
 sq_bracket_expression :
   OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
     // create one and replace as needed
-    $$ = SuffixOp();
-    ($$).op = voperator::INDEX;
+    $$ = verilog_expr::SuffixOp();
+    ($$).op = verilog_expr::voperator::INDEX;
     ($$).ranges.push_back($2);
   }
 | OPEN_SQ_BRACKET expression COLON  expression CLOSE_SQ_BRACKET{
-    $$ = SuffixOp();
-    ($$).op = voperator::RANGE_INDEX;
+    $$ = verilog_expr::SuffixOp();
+    ($$).op = verilog_expr::voperator::RANGE_INDEX;
     ($$).ranges.push_back($2);
     ($$).ranges.push_back($4);
   }
 | OPEN_SQ_BRACKET expression IDX_PRT_SEL_PLUS expression CLOSE_SQ_BRACKET{
-    $$ = SuffixOp();
-    ($$).op = voperator::IDX_PRT_SEL_PLUS;
+    $$ = verilog_expr::SuffixOp();
+    ($$).op = verilog_expr::voperator::IDX_PRT_SEL_PLUS;
     ($$).ranges.push_back($2);
     ($$).ranges.push_back($4);
   }
 | OPEN_SQ_BRACKET expression IDX_PRT_SEL_MINUS expression CLOSE_SQ_BRACKET{
       // $2 $4
-    $$ = SuffixOp();
-    ($$).op = voperator::IDX_PRT_SEL_MINUS;
+    $$ = verilog_expr::SuffixOp();
+    ($$).op = verilog_expr::voperator::IDX_PRT_SEL_MINUS;
     ($$).ranges.push_back($2);
     ($$).ranges.push_back($4);
   }
@@ -437,7 +437,7 @@ string : STRING {$$=$1;} ;
 
 /* A.9.1 Attributes */
 
-attribute_instances : { $$=Attribute(); }
+attribute_instances : { $$=verilog_expr::Attribute(); }
                     | list_of_attribute_instances { $$=$1; }
                     ;
 
@@ -451,10 +451,10 @@ list_of_attribute_instances :
   }
 ;
 
-attr_specs : { $$ = Attribute(); }
+attr_specs : { $$ = verilog_expr::Attribute(); }
            | attr_name EQ expression {
                // make new one
-               $$ = Attribute();
+               $$ = verilog_expr::Attribute();
                ($$).AddAttribute($1,$3);
            }
            | attr_name EQ expression COMMA attr_specs {
@@ -499,7 +499,7 @@ escaped_identifier  : ESCAPED_ID {
 
 simple_identifier: 
   SIMPLE_ID {
-    $$ = $1; /* VExprAst::MakeVar($1); */
+    $$ = $1; /* verilog_expr::VExprAst::MakeVar($1); */
 }
 ;
 
@@ -515,16 +515,16 @@ text_macro_usage : MACRO_IDENTIFIER {
 
 /* A.8.6 Operators */
 
-unary_operator : PLUS    {$$ = voperator::PLUS;}
-               | MINUS   {$$ = voperator::MINUS;}
-               | L_NEG   {$$ = voperator::L_NEG;}
-               | B_NEG   {$$ = voperator::B_NEG;}
-               | B_AND   {$$ = voperator::B_AND;}
-               | B_NAND  {$$ = voperator::B_NAND;}
-               | B_OR    {$$ = voperator::B_OR;}
-               | B_NOR   {$$ = voperator::B_NOR;}
-               | B_XOR   {$$ = voperator::B_XOR;}
-               | B_EQU   {$$ = voperator::B_EQU;}
+unary_operator : PLUS    {$$ = verilog_expr::voperator::PLUS;}
+               | MINUS   {$$ = verilog_expr::voperator::MINUS;}
+               | L_NEG   {$$ = verilog_expr::voperator::L_NEG;}
+               | B_NEG   {$$ = verilog_expr::voperator::B_NEG;}
+               | B_AND   {$$ = verilog_expr::voperator::B_AND;}
+               | B_NAND  {$$ = verilog_expr::voperator::B_NAND;}
+               | B_OR    {$$ = verilog_expr::voperator::B_OR;}
+               | B_NOR   {$$ = verilog_expr::voperator::B_NOR;}
+               | B_XOR   {$$ = verilog_expr::voperator::B_XOR;}
+               | B_EQU   {$$ = verilog_expr::voperator::B_EQU;}
                ;
 
 

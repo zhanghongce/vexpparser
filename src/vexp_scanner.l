@@ -156,7 +156,7 @@ TERNARY             "?"
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
 
-{AT}                   { return Vexp::Parser::make_AT               ( voperator::AT, Vexp::location()       ) ; /*this should be an operator*/ }
+{AT}                   { return Vexp::Parser::make_AT               ( verilog_expr::voperator::AT, Vexp::location()       ) ; /*this should be an operator*/ }
 {COMMA}                { return Vexp::Parser::make_COMMA            ( Vexp::location()                      ) ;}
 {DELAY}                { return Vexp::Parser::make_DELAY            ( Vexp::location()                      ) ;}
 {HASH}                 { return Vexp::Parser::make_HASH             ( Vexp::location()                      ) ;}
@@ -171,35 +171,35 @@ TERNARY             "?"
 {CLOSE_SQ_BRACKET}     { return Vexp::Parser::make_CLOSE_SQ_BRACKET ( Vexp::location()                      ) ;}
 {OPEN_SQ_BRACE}        { return Vexp::Parser::make_OPEN_SQ_BRACE    ( Vexp::location()                      ) ;}
 {CLOSE_SQ_BRACE}       { return Vexp::Parser::make_CLOSE_SQ_BRACE   ( Vexp::location()                      ) ;}
-{STAR}                 { return Vexp::Parser::make_STAR             ( voperator::STAR    , Vexp::location() ) ;}
-{PLUS}                 { return Vexp::Parser::make_PLUS             ( voperator::PLUS    , Vexp::location() ) ;}
-{MINUS}                { return Vexp::Parser::make_MINUS            ( voperator::MINUS   , Vexp::location() ) ;}
-{ASL}                  { return Vexp::Parser::make_ASL              ( voperator::ASL     , Vexp::location() ) ;}
-{ASR}                  { return Vexp::Parser::make_ASR              ( voperator::ASR     , Vexp::location() ) ;}
-{LSL}                  { return Vexp::Parser::make_LSL              ( voperator::LSL     , Vexp::location() ) ;}
-{LSR}                  { return Vexp::Parser::make_LSR              ( voperator::LSR     , Vexp::location() ) ;}
-{DIV}                  { return Vexp::Parser::make_DIV              ( voperator::DIV     , Vexp::location() ) ;}
-{POW}                  { return Vexp::Parser::make_POW              ( voperator::POW     , Vexp::location() ) ;}
-{MOD}                  { return Vexp::Parser::make_MOD              ( voperator::MOD     , Vexp::location() ) ;}
-{GTE}                  { return Vexp::Parser::make_GTE              ( voperator::GTE     , Vexp::location() ) ;}
-{LTE}                  { return Vexp::Parser::make_LTE              ( voperator::LTE     , Vexp::location() ) ;}
-{GT}                   { return Vexp::Parser::make_GT               ( voperator::GT      , Vexp::location() ) ;}
-{LT}                   { return Vexp::Parser::make_LT               ( voperator::LT      , Vexp::location() ) ;}
-{L_NEG}                { return Vexp::Parser::make_L_NEG            ( voperator::L_NEG   , Vexp::location() ) ;}
-{L_AND}                { return Vexp::Parser::make_L_AND            ( voperator::L_AND   , Vexp::location() ) ;}
-{L_OR}                 { return Vexp::Parser::make_L_OR             ( voperator::L_OR    , Vexp::location() ) ;}
-{C_EQ}                 { return Vexp::Parser::make_C_EQ             ( voperator::C_EQ    , Vexp::location() ) ;}
-{L_EQ}                 { return Vexp::Parser::make_L_EQ             ( voperator::L_EQ    , Vexp::location() ) ;}
-{C_NEQ}                { return Vexp::Parser::make_C_NEQ            ( voperator::C_NEQ   , Vexp::location() ) ;}
-{L_NEQ}                { return Vexp::Parser::make_L_NEQ            ( voperator::L_NEQ   , Vexp::location() ) ;}
-{B_NEG}                { return Vexp::Parser::make_B_NEG            ( voperator::B_NEG   , Vexp::location() ) ;}
-{B_AND}                { return Vexp::Parser::make_B_AND            ( voperator::B_AND   , Vexp::location() ) ;}
-{B_OR}                 { return Vexp::Parser::make_B_OR             ( voperator::B_OR    , Vexp::location() ) ;}
-{B_XOR}                { return Vexp::Parser::make_B_XOR            ( voperator::B_XOR   , Vexp::location() ) ;}
-{B_EQU}                { return Vexp::Parser::make_B_EQU            ( voperator::B_EQU   , Vexp::location() ) ;}
-{B_NAND}               { return Vexp::Parser::make_B_NAND           ( voperator::B_NAND  , Vexp::location() ) ;}
-{B_NOR}                { return Vexp::Parser::make_B_NOR            ( voperator::B_NOR   , Vexp::location() ) ;}
-{TERNARY}              { return Vexp::Parser::make_TERNARY          ( voperator::TERNARY , Vexp::location() ) ;}
+{STAR}                 { return Vexp::Parser::make_STAR             ( verilog_expr::voperator::STAR    , Vexp::location() ) ;}
+{PLUS}                 { return Vexp::Parser::make_PLUS             ( verilog_expr::voperator::PLUS    , Vexp::location() ) ;}
+{MINUS}                { return Vexp::Parser::make_MINUS            ( verilog_expr::voperator::MINUS   , Vexp::location() ) ;}
+{ASL}                  { return Vexp::Parser::make_ASL              ( verilog_expr::voperator::ASL     , Vexp::location() ) ;}
+{ASR}                  { return Vexp::Parser::make_ASR              ( verilog_expr::voperator::ASR     , Vexp::location() ) ;}
+{LSL}                  { return Vexp::Parser::make_LSL              ( verilog_expr::voperator::LSL     , Vexp::location() ) ;}
+{LSR}                  { return Vexp::Parser::make_LSR              ( verilog_expr::voperator::LSR     , Vexp::location() ) ;}
+{DIV}                  { return Vexp::Parser::make_DIV              ( verilog_expr::voperator::DIV     , Vexp::location() ) ;}
+{POW}                  { return Vexp::Parser::make_POW              ( verilog_expr::voperator::POW     , Vexp::location() ) ;}
+{MOD}                  { return Vexp::Parser::make_MOD              ( verilog_expr::voperator::MOD     , Vexp::location() ) ;}
+{GTE}                  { return Vexp::Parser::make_GTE              ( verilog_expr::voperator::GTE     , Vexp::location() ) ;}
+{LTE}                  { return Vexp::Parser::make_LTE              ( verilog_expr::voperator::LTE     , Vexp::location() ) ;}
+{GT}                   { return Vexp::Parser::make_GT               ( verilog_expr::voperator::GT      , Vexp::location() ) ;}
+{LT}                   { return Vexp::Parser::make_LT               ( verilog_expr::voperator::LT      , Vexp::location() ) ;}
+{L_NEG}                { return Vexp::Parser::make_L_NEG            ( verilog_expr::voperator::L_NEG   , Vexp::location() ) ;}
+{L_AND}                { return Vexp::Parser::make_L_AND            ( verilog_expr::voperator::L_AND   , Vexp::location() ) ;}
+{L_OR}                 { return Vexp::Parser::make_L_OR             ( verilog_expr::voperator::L_OR    , Vexp::location() ) ;}
+{C_EQ}                 { return Vexp::Parser::make_C_EQ             ( verilog_expr::voperator::C_EQ    , Vexp::location() ) ;}
+{L_EQ}                 { return Vexp::Parser::make_L_EQ             ( verilog_expr::voperator::L_EQ    , Vexp::location() ) ;}
+{C_NEQ}                { return Vexp::Parser::make_C_NEQ            ( verilog_expr::voperator::C_NEQ   , Vexp::location() ) ;}
+{L_NEQ}                { return Vexp::Parser::make_L_NEQ            ( verilog_expr::voperator::L_NEQ   , Vexp::location() ) ;}
+{B_NEG}                { return Vexp::Parser::make_B_NEG            ( verilog_expr::voperator::B_NEG   , Vexp::location() ) ;}
+{B_AND}                { return Vexp::Parser::make_B_AND            ( verilog_expr::voperator::B_AND   , Vexp::location() ) ;}
+{B_OR}                 { return Vexp::Parser::make_B_OR             ( verilog_expr::voperator::B_OR    , Vexp::location() ) ;}
+{B_XOR}                { return Vexp::Parser::make_B_XOR            ( verilog_expr::voperator::B_XOR   , Vexp::location() ) ;}
+{B_EQU}                { return Vexp::Parser::make_B_EQU            ( verilog_expr::voperator::B_EQU   , Vexp::location() ) ;}
+{B_NAND}               { return Vexp::Parser::make_B_NAND           ( verilog_expr::voperator::B_NAND  , Vexp::location() ) ;}
+{B_NOR}                { return Vexp::Parser::make_B_NOR            ( verilog_expr::voperator::B_NOR   , Vexp::location() ) ;}
+{TERNARY}              { return Vexp::Parser::make_TERNARY          ( verilog_expr::voperator::TERNARY , Vexp::location() ) ;}
 {EQ}                   { return Vexp::Parser::make_EQ               ( Vexp::location()                      ) ; /*this is just a symbol not OP*/ }
 
 {BASE_DECIMAL}         {return Vexp::Parser::make_DEC_BASE(Vexp::location());}

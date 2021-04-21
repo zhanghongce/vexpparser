@@ -4,16 +4,15 @@
 #include <sstream>
 
 using namespace std;
-using namespace Vexp;
 
 int main() {
-  Interpreter intp;
+  Vexp::Interpreter intp;
   stringstream ss;
   ss << "i0.a +a.b*4'd8 + (abc+1)@(~t.t0)*a@b##1";
   intp.switchInputStream(&ss);
   try{
     intp.parse();
-  } catch (VexpException &e) {
+  } catch (verilog_expr::VexpException &e) {
     cout << "AST constructor error:" << e.msg_ << endl;
   }
   cout << intp.str() << endl;

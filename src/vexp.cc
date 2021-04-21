@@ -3,6 +3,8 @@
 #include <vexp.h>
 #include <cassert>
 
+namespace verilog_expr {
+
 VExprAst::VExprAstPtr VExprAst::MakeConstant(int base, int width, const std::string & lit) {
   return std::make_shared<VExprAstConstant>(base, width, lit);
 }
@@ -222,3 +224,5 @@ int width_to_int(const std::string & s) { // convert width to int
     return 0;
   }
 }
+
+} // namespace verilog_expr

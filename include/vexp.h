@@ -10,6 +10,7 @@
 #include <iostream>
 #include <unordered_map>
 
+namespace verilog_expr {
 
 enum class ExceptionCause { 
   OpNaryNotMatched, //
@@ -186,5 +187,7 @@ struct SuffixOp {
   voperator op;
   std::vector<VExprAstPtr> ranges;
 }; // SuffixOp
+
+} // namespace verilog_expr
 
 #endif // _VEXPPARSER_VEXP_H_

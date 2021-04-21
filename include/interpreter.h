@@ -79,7 +79,7 @@ public:
     /**
      * Return the parsed ast root
      */
-    VExprAst::VExprAstPtr GetAstRoot() const { return m_ast; }
+    verilog_expr::VExprAst::VExprAstPtr GetAstRoot() const { return m_ast; }
 
     /**
      * This is needed so that Scanner and Parser can call some
@@ -90,7 +90,7 @@ public:
     
 private:
     // Used internally to set the ast root
-    void SetAstRoot(const VExprAst::VExprAstPtr & in) { m_ast = in; }
+    void SetAstRoot(const verilog_expr::VExprAst::VExprAstPtr & in) { m_ast = in; }
     
     // Used internally by Scanner YY_USER_ACTION to update location indicator
     void increaseLocation(unsigned int loc);
@@ -104,7 +104,7 @@ private:
     unsigned int m_location;          // Used by scanner
 
 protected:
-    VExprAst::VExprAstPtr m_ast;
+    verilog_expr::VExprAst::VExprAstPtr m_ast;
 };
 
 }
