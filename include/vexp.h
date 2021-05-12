@@ -14,6 +14,10 @@ namespace verilog_expr {
 
 enum class ExceptionCause { 
   OpNaryNotMatched, //
+  OpNaryNotMatchedVlgTranslation, //
+  UntranslatedVerilog,
+  UnknownVlgTranslation,
+  UnknownNumberVlgTranslation
 };
 
 class VexpException {
@@ -84,6 +88,7 @@ class AbstractInternalInfo {
   public:
     typedef std::shared_ptr<AbstractInternalInfo> InternalInfoPtr;
     virtual void should_not_instantiate() = 0;
+    virtual bool translatable() {return true;}
 }; 
 
 class VExprAst {
@@ -105,7 +110,9 @@ public:
   static VExprAstPtr MakeSpecialName(const std::string & name); // # name #
   static VExprAstPtr MakeVar(const std::string & name); // hierarchy names?
   static VExprAstPtr MakeUnaryAst(voperator op, const VExprAstPtr & c);
-  static VExprAstPtr MakeUnaryParamAst(voperator op, const VExprAstPtr & c, const std::vector<int> & param);
+  static VExprAstPtr MakeUnaryParamAst(voperator op, const VExprAstPtr & c, const std::vector<int> & param, const std::vector<std::string> & sparam);
+  static VExprAstPtr MakeBinaryParamAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const std::vector<int> & param, const std::vector<std::string> & sparam);
+  
   
   static VExprAstPtr MakeBinaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2);
   static VExprAstPtr MakeTernaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const VExprAstPtr & c3);
@@ -116,6 +123,7 @@ public:
   virtual bool is_leaf()     const {return false;}
   virtual bool is_var()      const {return false;}
   virtual bool is_constant() const {return false;}
+  virtual std::string to_verilog() const;
 
   VExprAst(voperator op, const VExprAstPtrVec & c) : op_(op) , child_(c) {}
 
@@ -123,6 +131,7 @@ protected:
   voperator op_;
   VExprAstPtrVec child_;
   std::vector<int> parameter_;
+  std::vector<std::string> str_parameter_;
   InternalInfoPtr annotate_;
 };
 
@@ -150,6 +159,8 @@ public:
   virtual bool is_constant() const override {return true;}
   std::tuple<int, int, std::string> get_constant() const {return std::make_tuple(base_, width_, lit_);}
 
+  virtual std::string to_verilog() const override;
+
   VExprAstConstant(int base, int width, const std::string & lit) :
      VExprAst(voperator::MK_CONST, {}), base_(base), width_(width), lit_ (lit) {}
 
@@ -169,6 +180,8 @@ public:
   virtual bool is_var()  const override {return true;}
   std::pair<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
   
+  virtual std::string to_verilog() const override;
+
   VExprAstVar(const std::string & name, bool is_special_name) : 
     VExprAst(voperator::MK_VAR, {}), 
     name_(name), is_special_name_(is_special_name) {}

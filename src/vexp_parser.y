@@ -116,7 +116,7 @@
 %token <std::string> STRING
 
 
-%nterm<verilog_expr::VExprAst::VExprAstPtr> astroot expression primary conditional_expression number function_call
+%nterm<verilog_expr::VExprAst::VExprAstPtr> astroot expression delay_expression next_sequence primary conditional_expression number function_call
 %nterm<verilog_expr::VExprAst::VExprAstPtr> concatenation multiple_concatenation
 %nterm<verilog_expr::voperator> unary_operator
 %nterm<verilog_expr::Attribute> attribute_instances list_of_attribute_instances attr_specs
@@ -145,7 +145,7 @@
 %left   STAR DIV MOD
 %left   POW
 %nonassoc AT                    /* Runtime error */
-%nonassoc DELAY                 /* Runtime error */
+%left DELAY                 /* Runtime error */
 
 /* turn out the followings are not necessary */
 /* %left   OPEN_BRACKET */
@@ -168,13 +168,12 @@ expression :
 | unary_operator attribute_instances primary{
     $$ = verilog_expr::VExprAst::MakeUnaryAst( $1, $3 );
   }
-| expression DELAY UNSIGNED_NUMBER {
-    std::vector<int> param;
-    param.push_back( verilog_expr::width_to_int($3) );
-    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY , $1, param);
+| delay_expression {
+    $$ = $1;
   }
 | expression AT  attribute_instances expression{
     // this is the A@B shortcut
+    // expression maybe a number or an expression
     $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::AT, $1, $4);
   }
 | expression PLUS  attribute_instances expression{
@@ -263,7 +262,53 @@ expression :
 
 ;
 
+delay_expression :
+  expression DELAY UNSIGNED_NUMBER  {
+    std::vector<int> tmp;
+    tmp.push_back(verilog_expr::width_to_int($3));
+    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY,
+      $1,
+      tmp, {} );
+  }
+| expression DELAY simple_identifier DOT UNSIGNED_NUMBER {
+    std::vector<int> tmp;
+    tmp.push_back(verilog_expr::width_to_int($5));
+    std::vector<std::string> stmp;
+    stmp.push_back($3);
+    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY,
+      $1,
+      tmp, stmp );
 
+  }
+| expression DELAY UNSIGNED_NUMBER  next_sequence  {
+    std::vector<int> tmp;
+    tmp.push_back(verilog_expr::width_to_int($3));
+    $$ = verilog_expr::VExprAst::MakeBinaryParamAst(verilog_expr::voperator::DELAY,
+      $1,$4,
+      tmp, {} );
+  }
+| expression DELAY simple_identifier DOT UNSIGNED_NUMBER next_sequence {
+    std::vector<int> tmp;
+    tmp.push_back(verilog_expr::width_to_int($5));
+    std::vector<std::string> stmp;
+    stmp.push_back($3);
+    $$ = verilog_expr::VExprAst::MakeBinaryParamAst(verilog_expr::voperator::DELAY,
+      $1, $6,
+      tmp, stmp );
+  }
+;
+
+
+next_sequence : hierarchical_identifier {
+    $$ = verilog_expr::VExprAst::MakeVar($1);
+  }
+| hierarchical_identifier_special_name {
+    $$ = verilog_expr::VExprAst::MakeSpecialName($1);
+  }
+| OPEN_BRACKET expression CLOSE_BRACKET {
+    $$ = $2;
+  }
+;
 
 /* A.8.3 Expressions */
 

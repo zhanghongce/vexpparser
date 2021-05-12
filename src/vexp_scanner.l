@@ -221,7 +221,7 @@ TERNARY             "?"
 {ESCAPED_ID}           {
     return Vexp::Parser::make_ESCAPED_ID(yytext, Vexp::location());
 }
-{SIMPLE_ID}            {
+{SIMPLE_ID}|{SYSTEM_ID} {
     return Vexp::Parser::make_SIMPLE_ID(yytext, Vexp::location());
 }
 
