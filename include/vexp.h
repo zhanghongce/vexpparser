@@ -100,10 +100,14 @@ public:
   voperator get_op() { return op_; }
   unsigned get_child_cnt() { return child_.size() ; }
   virtual const VExprAstPtrVec & get_child()  { return child_; } 
+  VExprAstPtr & child(unsigned idx)  { return child_.at(idx); }
   // about the annotation
   template<class T> std::shared_ptr<T> get_annotation() const {
     return std::dynamic_pointer_cast<T>(annotate_);
   }
+
+  const std::vector<int> & get_parameter() const { return parameter_; }
+  const std::vector<std::string> & get_str_parameter() const { return str_parameter_; }
 
   // factory function -- do the checking here
   static VExprAstPtr MakeConstant(int base, int width, const std::string & lit); // if no width specified then 0
