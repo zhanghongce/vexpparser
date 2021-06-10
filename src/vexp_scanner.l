@@ -142,6 +142,8 @@ B_EQU               "^~"|"~^"
 B_NAND              "~&"
 B_NOR               "~|"
 TERNARY             "?"
+IMPLY               "|->"
+IMPLY_NEXT          "|=>"
 
 %%
 
@@ -200,6 +202,8 @@ TERNARY             "?"
 {B_NAND}               { return Vexp::Parser::make_B_NAND           ( verilog_expr::voperator::B_NAND  , Vexp::location() ) ;}
 {B_NOR}                { return Vexp::Parser::make_B_NOR            ( verilog_expr::voperator::B_NOR   , Vexp::location() ) ;}
 {TERNARY}              { return Vexp::Parser::make_TERNARY          ( verilog_expr::voperator::TERNARY , Vexp::location() ) ;}
+{IMPLY}                { return Vexp::Parser::make_IMPLY            ( Vexp::location()                      ) ; }
+{IMPLY_NEXT}           { return Vexp::Parser::make_IMPLY_NEXT       ( Vexp::location()                      ) ; }
 {EQ}                   { return Vexp::Parser::make_EQ               ( Vexp::location()                      ) ; /*this is just a symbol not OP*/ }
 
 {BASE_DECIMAL}         {return Vexp::Parser::make_DEC_BASE(Vexp::location());}

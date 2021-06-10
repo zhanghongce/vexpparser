@@ -104,6 +104,8 @@
 %token EQ
 %token DOT
 %token DELAY
+%token IMPLY
+%token IMPLY_NEXT
 
 %token <std::string> SIMPLE_ID
 %token <std::string> ESCAPED_ID
@@ -130,7 +132,7 @@
 
 /* Operator Precedence */
 
-
+%right  IMPLY IMPLY_NEXT
 %precedence  COLON                 /* Lowest Precedence. */
 %right  TERNARY
 %left   L_OR
@@ -236,6 +238,24 @@ expression :
 | expression B_NOR attribute_instances expression{
     $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_NOR, $1, $4);
   }
+
+| expression IMPLY attribute_instances expression{
+    $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_OR, 
+      verilog_expr::VExprAst::MakeUnaryAst( verilog_expr::voperator::L_NEG , $1),
+      $4); /* !($1) || ($4) */
+  }
+
+| expression IMPLY_NEXT attribute_instances expression{
+    std::vector<int> tmp;
+    tmp.push_back(1);
+    $$ = 
+      verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::L_OR, 
+        verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY,
+          verilog_expr::VExprAst::MakeUnaryAst( verilog_expr::voperator::L_NEG ,$1),
+        tmp, {} ), 
+      $4); /* (!$1 ## 1) || ($4) */
+  }
+
 | expression B_NAND attribute_instances expression{
     $$ = verilog_expr::VExprAst::MakeBinaryAst(verilog_expr::voperator::B_NAND, $1, $4);
   }
