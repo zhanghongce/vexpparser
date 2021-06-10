@@ -105,6 +105,7 @@ public:
   template<class T> std::shared_ptr<T> get_annotation() const {
     return std::dynamic_pointer_cast<T>(annotate_);
   }
+  void set_annotation(const InternalInfoPtr & anno) { annotate_ = anno; }
 
   const std::vector<int> & get_parameter() const { return parameter_; }
   const std::vector<std::string> & get_str_parameter() const { return str_parameter_; }
