@@ -81,6 +81,18 @@ int main() {
     }
     cout << intp.str() << endl;
   }
+  { // imply
+    Vexp::Interpreter intp;
+    stringstream ss;
+    ss << "a |-> b ## 1 c";
+    intp.switchInputStream(&ss);
+    try{
+      intp.parse();
+    } catch (verilog_expr::VexpException &e) {
+      cout << "AST constructor error:" << e.msg_ << endl;
+    }
+    cout << intp.str() << endl;
+  }
 //-------------------------------------------
 
   cout << "-----------------------------\n";
@@ -113,6 +125,8 @@ int main() {
     st = intp.GetAstRoot()->to_verilog();
     cout << st << endl;
   }
+
+  
 
   return 0;
 }

@@ -103,7 +103,7 @@ public:
   VExprAstPtr & child(unsigned idx)  { return child_.at(idx); }
   // about the annotation
   template<class T> std::shared_ptr<T> get_annotation() const {
-    return std::dynamic_pointer_cast<T>(annotate_);
+    return annotate_ == nullptr ? nullptr : std::dynamic_pointer_cast<T>(annotate_);
   }
   void set_annotation(const InternalInfoPtr & anno) { annotate_ = anno; }
 
