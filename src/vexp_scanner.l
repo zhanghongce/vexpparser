@@ -83,6 +83,7 @@ NUM_UNSIGNED        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
 
 /* Identifiers */
 
+DOLLAR              \$
 SYSTEM_ID           \$[a-zA-Z0-9_\$]+
 SIMPLE_ID           [a-zA-Z_][a-zA-Z0-9_$]*
 ESCAPED_ID          \\{SIMPLE_ID}
@@ -225,8 +226,12 @@ IMPLY_NEXT          "|=>"
 {ESCAPED_ID}           {
     return Vexp::Parser::make_ESCAPED_ID(yytext, Vexp::location());
 }
-{SIMPLE_ID}|{SYSTEM_ID} {
+{SIMPLE_ID}|{SYSTEM_ID} {        
     return Vexp::Parser::make_SIMPLE_ID(yytext, Vexp::location());
+}
+
+{DOLLAR} {
+  return Vexp::Parser::make_DOLLAR(Vexp::location());
 }
 
 {STRING}               { return Vexp::Parser::make_STRING(yytext, Vexp::location());}

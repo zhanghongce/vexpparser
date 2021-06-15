@@ -68,6 +68,44 @@ int main() {
     }
     cout << intp.str() << endl;
   }
+  { // delay 3
+    Vexp::Interpreter intp;
+    stringstream ss;
+    ss << "a ##[clk.1:clk.2] b";
+    intp.switchInputStream(&ss);
+    try{
+      intp.parse();
+    } catch (verilog_expr::VexpException &e) {
+      cout << "AST constructor error:" << e.msg_ << endl;
+    }
+    cout << intp.str() << endl;
+  }
+
+  { // delay 4
+    Vexp::Interpreter intp;
+    stringstream ss;
+    ss << "((a ##[clk.1:$] b) ##[1:2] c) ##3 d";
+    intp.switchInputStream(&ss);
+    try{
+      intp.parse();
+    } catch (verilog_expr::VexpException &e) {
+      cout << "AST constructor error:" << e.msg_ << endl;
+    }
+    cout << intp.str() << endl;
+  }
+
+  { // delay 5
+    Vexp::Interpreter intp;
+    stringstream ss;
+    ss << "a ##[clk.1:clk.3] b ##[1:clk2.2] c ##clk.3 d";
+    intp.switchInputStream(&ss);
+    try{
+      intp.parse();
+    } catch (verilog_expr::VexpException &e) {
+      cout << "AST constructor error:" << e.msg_ << endl;
+    }
+    cout << intp.str() << endl;
+  }
 
   { // index
     Vexp::Interpreter intp;
