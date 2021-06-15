@@ -346,30 +346,6 @@ delay_expression :
       $1,
       tmp, stmp );
   }
-| expression DELAY OPEN_SQ_BRACKET UNSIGNED_NUMBER COLON DOLLAR CLOSE_SQ_BRACKET {
-  /*11111111 22222 333333333333333 444444444444444 55555 666666 7777777777777777*/
-  std::vector<int> tmp;
-  tmp.push_back(verilog_expr::width_to_int($4));
-  tmp.push_back(0);
-  std::vector<std::string> stmp;
-  stmp.push_back("");
-  stmp.push_back("");
-    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY,
-      $1,
-      tmp, stmp );
-  }
-| expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON DOLLAR CLOSE_SQ_BRACKET {
-  /*11111111 22222 333333333333333 44444444444444444 555 666666666666666 77777 888888 9999999999999999*/
-  std::vector<int> tmp;
-  tmp.push_back(verilog_expr::width_to_int($6));
-  tmp.push_back(0);
-  std::vector<std::string> stmp;
-  stmp.push_back($4);
-  stmp.push_back("");
-    $$ = verilog_expr::VExprAst::MakeUnaryParamAst(verilog_expr::voperator::DELAY,
-      $1,
-      tmp, stmp );
-  }
 | expression DELAY UNSIGNED_NUMBER  next_sequence  {
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($3));
