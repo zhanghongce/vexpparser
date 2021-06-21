@@ -152,7 +152,7 @@ std::vector<std::string> voperator_str_vlg = {
   "===",
   "==",
   "!==",
-  "==",
+  "!=",
   "~",
   "&",
   "|",
@@ -177,6 +177,7 @@ std::vector<std::string> voperator_str_vlg = {
 
   "#notsupported"
 };
+
 
 std::string VExprAstVar::to_verilog() const {
   if(annotate_.get() != nullptr && !(annotate_->translatable()) )
@@ -247,14 +248,12 @@ std::string VExprAst::to_verilog() const {
     case voperator::LTE:
     case voperator::GT:
     case voperator::LT:
-    case voperator::L_NEG:
     case voperator::L_AND:
     case voperator::L_OR:
     case voperator::C_EQ:
     case voperator::L_EQ:
     case voperator::C_NEQ:
     case voperator::L_NEQ:
-    case voperator::B_NEG:
     case voperator::B_AND:
     case voperator::B_OR:
     case voperator::B_XOR:
@@ -265,6 +264,8 @@ std::string VExprAst::to_verilog() const {
         throw VexpException(ExceptionCause::OpNaryNotMatchedVlgTranslation, opstr );
       return  "("+ child_.at(0)->to_verilog() + ")" + opstr + "("+ child_.at(1)->to_verilog()  + ")";
       break;
+    default:
+      break; // will handle in the following cases
   }
 
   if(op_ == voperator::INDEX) {

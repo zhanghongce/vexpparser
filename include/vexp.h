@@ -17,7 +17,10 @@ enum class ExceptionCause {
   OpNaryNotMatchedVlgTranslation, //
   UntranslatedVerilog,
   UnknownVlgTranslation,
-  UnknownNumberVlgTranslation
+  UntranslatedSmtlib2,
+  UnknownNumberVlgTranslation,
+  UnknownNumberSmtTranslation,
+  TypeMismatch
 };
 
 class VexpException {
