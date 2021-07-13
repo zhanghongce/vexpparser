@@ -122,7 +122,20 @@ int main() {
   { // imply
     Vexp::Interpreter intp;
     stringstream ss;
-    ss << "a |-> b ## 1 c";
+    ss << "a |-> b ## 1 c"; // same as "a |-> (b ##1 c)"
+    intp.switchInputStream(&ss);
+    try{
+      intp.parse();
+    } catch (verilog_expr::VexpException &e) {
+      cout << "AST constructor error:" << e.msg_ << endl;
+    }
+    cout << intp.str() << endl;
+  }
+//-------------------------------------------
+  { // imply
+    Vexp::Interpreter intp;
+    stringstream ss;
+    ss << "{(a + b)[2:0], ({c,d})[1:0]}";
     intp.switchInputStream(&ss);
     try{
       intp.parse();
