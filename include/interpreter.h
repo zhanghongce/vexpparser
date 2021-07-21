@@ -81,6 +81,14 @@ public:
      */
     verilog_expr::VExprAst::VExprAstPtr GetAstRoot() const { return m_ast; }
 
+
+    /**
+     * Check if error occurs in parsing
+     * there are cases like `a=1)` that m_ast is not NULL
+     * but it has syntax error.
+     */
+    bool HasError() const { return has_error; }
+
     /**
      * This is needed so that Scanner and Parser can call some
      * methods that we want to keep hidden from the end user.
@@ -94,7 +102,6 @@ private:
     
     // Record error
     void SetError() { has_error = true; }
-    bool HasError() const { return has_error; }
     
     // Used internally by Scanner YY_USER_ACTION to update location indicator
     void increaseLocation(unsigned int loc);
