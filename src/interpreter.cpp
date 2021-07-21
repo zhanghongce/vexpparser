@@ -36,6 +36,7 @@ Interpreter::Interpreter() :
     m_scanner(*this),
     m_parser(m_scanner, *this),
     m_location(0),
+    has_error(false),
     m_ast(nullptr)
 {
 

@@ -5,7 +5,27 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char ** argv) {
+  {
+    if(argc >= 2) {
+      for (int idx = 1; idx < argc; ++idx) {
+        
+        Vexp::Interpreter intp;
+        stringstream ss;
+        ss << argv[idx];
+        intp.switchInputStream(&ss);
+        try{
+          intp.parse();
+        } catch (verilog_expr::VexpException &e) {
+          cout << "AST constructor error:" << e.msg_ << endl;
+        }
+        cout << intp.str() << endl;
+        cout << intp.GetAstRoot()->to_verilog() << endl;
+      }
+      return 0;
+    }
+  }
+
   {
     Vexp::Interpreter intp;
     stringstream ss;

@@ -92,6 +92,10 @@ private:
     // Used internally to set the ast root
     void SetAstRoot(const verilog_expr::VExprAst::VExprAstPtr & in) { m_ast = in; }
     
+    // Record error
+    void SetError() { has_error = true; }
+    bool HasError() const { return has_error; }
+    
     // Used internally by Scanner YY_USER_ACTION to update location indicator
     void increaseLocation(unsigned int loc);
     
@@ -102,6 +106,7 @@ private:
     Scanner m_scanner;
     Parser m_parser;
     unsigned int m_location;          // Used by scanner
+    bool has_error;
 
 protected:
     verilog_expr::VExprAst::VExprAstPtr m_ast;

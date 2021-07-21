@@ -718,4 +718,5 @@ void Vexp::Parser::error(const location &loc , const std::string &message) {
 	// cout << "Error: " << message << endl << "Location: " << loc << endl;
 	
         std::cout << "Error: " << message << std::endl << "Error location: " << driver.location() << std::endl;
+        driver.SetError();
 }
