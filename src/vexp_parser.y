@@ -13,7 +13,7 @@
 
 %code requires
 {
-  #include <vexp.h>
+  #include <vexpparser/vexp.h>
   typedef verilog_expr::VExprAst::VExprAstPtr VExprAstPtr;
   
   namespace Vexp {
@@ -24,9 +24,9 @@
 
 %code top
 {
-  #include "scanner.h"
+  #include "vexpparser/scanner.h"
   #include "vexp_parser.hh"
-  #include "interpreter.h"
+  #include "vexpparser/interpreter.h"
   #include "location.hh"
 
     // yylex() arguments are defined in parser.y

@@ -1,6 +1,6 @@
 // Source for AST nodes
 
-#include <vexp.h>
+#include <vexpparser/vexp.h>
 #include <cassert>
 
 namespace verilog_expr {

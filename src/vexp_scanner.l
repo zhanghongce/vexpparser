@@ -5,8 +5,8 @@
 # include <cstring> // strerror
 # include <string>
 
-# include "scanner.h"
-# include "interpreter.h"
+# include "vexpparser/scanner.h"
+# include "vexpparser/interpreter.h"
 # include "vexp_parser.hh"
 # include "location.hh"
 
