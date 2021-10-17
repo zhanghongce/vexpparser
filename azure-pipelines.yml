@@ -48,6 +48,7 @@ jobs:
   steps:
   - script: |
       choco install winflexbison3
+      dir %ProgramData%\\chocolatey\\lib\\winflexbison3\\tools
     displayName: 'package'
   - script: |
       md build 
