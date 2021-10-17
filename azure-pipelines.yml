@@ -14,7 +14,7 @@ jobs:
   steps:
   - script: |
       brew update
-      brew install bison libfl-dev
+      brew install bison
     displayName: 'package'
   - script: |
       export PATH="/usr/local/opt/bison/bin:$PATH"
@@ -52,6 +52,6 @@ jobs:
   - script: |
       md build 
       cd build
-      cmake .. 
+      cmake .. -DCMAKE_CXX_FLAGS=-isystem\ C:\\ProgramData\\chocolatey\\winflexbison3
       cmake --build .
     displayName: 'build'
