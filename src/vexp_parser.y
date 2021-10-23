@@ -312,6 +312,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON UNSIGNED_NUMBER CLOSE_SQ_BRACKET {
     /*1        2       3              4               5    6                7      8              9*/
+    /* e ## [clk.N:M] */
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($6));
     tmp.push_back(verilog_expr::width_to_int($8));
@@ -324,6 +325,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET UNSIGNED_NUMBER COLON simple_identifier DOT UNSIGNED_NUMBER CLOSE_SQ_BRACKET {
   /* 1         2      3               4              5      6              777       8           9 */
+  /* e ## [N:clk.M] */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($4));
   tmp.push_back(verilog_expr::width_to_int($8));
@@ -336,6 +338,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON simple_identifier DOT UNSIGNED_NUMBER CLOSE_SQ_BRACKET {
   /*11111111 22222 333333333333333 44444444444444444 555 666666666666666 77777 88888888888888888 999 aaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb*/
+  /* e ## [clk1.N : clk2.M] */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($6));
   tmp.push_back(verilog_expr::width_to_int($10));
@@ -347,13 +350,15 @@ delay_expression :
       tmp, stmp );
   }
 | expression DELAY UNSIGNED_NUMBER  next_sequence  {
+    /* e ## M  id or (...) */
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($3));
     $$ = verilog_expr::VExprAst::MakeBinaryParamAst(verilog_expr::voperator::DELAY,
       $1,$4,
-      tmp, {} );
+      tmp, {""} );
   }
 | expression DELAY simple_identifier DOT UNSIGNED_NUMBER next_sequence {
+    /* e ## clk.M  id or (...) */
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($5));
     std::vector<std::string> stmp;
@@ -364,6 +369,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET UNSIGNED_NUMBER COLON UNSIGNED_NUMBER CLOSE_SQ_BRACKET next_sequence {
   /*1          2        3                4          5      6               7                8 */
+  /* e ## [M:N] id or (...) */
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($4));
     tmp.push_back(verilog_expr::width_to_int($6));
@@ -373,6 +379,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON UNSIGNED_NUMBER CLOSE_SQ_BRACKET next_sequence {
     /*1        2       3              4               5    6                7      8              9              aaaa*/
+    /* e ## [clk.M:N] id or (...) */
     std::vector<int> tmp;
     tmp.push_back(verilog_expr::width_to_int($6));
     tmp.push_back(verilog_expr::width_to_int($8));
@@ -385,6 +392,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET UNSIGNED_NUMBER COLON simple_identifier DOT UNSIGNED_NUMBER CLOSE_SQ_BRACKET next_sequence {
   /* 1         2      3               4              5      6              777       8           9               10*/
+  /* e ## [M:clk.N] id or (...) */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($4));
   tmp.push_back(verilog_expr::width_to_int($8));
@@ -397,6 +405,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON simple_identifier DOT UNSIGNED_NUMBER CLOSE_SQ_BRACKET next_sequence {
   /*11111111 22222 333333333333333 44444444444444444 555 666666666666666 77777 88888888888888888 999 aaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb ccccccccccccc*/
+  /* e ## [clk.M:clk.N] id or (...) */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($6));
   tmp.push_back(verilog_expr::width_to_int($10));
@@ -409,6 +418,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET UNSIGNED_NUMBER COLON DOLLAR CLOSE_SQ_BRACKET next_sequence {
   /*11111111 22222 333333333333333 444444444444444 55555 666666 7777777777777777 8888888888888*/
+  /* e ## [M:$] id or (...) */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($4));
   tmp.push_back(0);
@@ -421,6 +431,7 @@ delay_expression :
   }
 | expression DELAY OPEN_SQ_BRACKET simple_identifier DOT UNSIGNED_NUMBER COLON DOLLAR CLOSE_SQ_BRACKET next_sequence {
   /*11111111 22222 333333333333333 44444444444444444 555 666666666666666 77777 888888 9999999999999999 aaaaaaaaaaaaa*/
+  /* e ## [clk.M:$] id or (...) */
   std::vector<int> tmp;
   tmp.push_back(verilog_expr::width_to_int($6));
   tmp.push_back(0);
