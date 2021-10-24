@@ -451,6 +451,9 @@ next_sequence : hierarchical_identifier {
 | hierarchical_identifier_special_name {
     $$ = verilog_expr::VExprAst::MakeSpecialName($1);
   }
+| number {
+    $$ = $1;
+  }
 | OPEN_BRACKET expression CLOSE_BRACKET {
     $$ = $2;
   }

@@ -103,7 +103,7 @@ public:
   voperator get_op() { return op_; }
   unsigned get_child_cnt() { return child_.size() ; }
   virtual const VExprAstPtrVec & get_child()  { return child_; } 
-  VExprAstPtr & child(unsigned idx)  { return child_.at(idx); }
+  // VExprAstPtr & child(unsigned idx)  { return child_.at(idx); }
   // about the annotation
   template<class T> std::shared_ptr<T> get_annotation() const {
     return annotate_ == nullptr ? nullptr : std::dynamic_pointer_cast<T>(annotate_);
@@ -114,6 +114,8 @@ public:
   const std::vector<std::string> & get_str_parameter() const { return str_parameter_; }
 
   // factory function -- do the checking here
+  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const;
+  
   static VExprAstPtr MakeConstant(int base, int width, const std::string & lit); // if no width specified then 0
   static VExprAstPtr MakeSpecialName(const std::string & name); // # name #
   static VExprAstPtr MakeVar(const std::string & name); // hierarchy names?
@@ -128,18 +130,22 @@ public:
   
   friend std::ostream & operator<<(std::ostream & os, const VExprAstPtr & obj);
   
-  virtual bool is_leaf()     const {return false;}
-  virtual bool is_var()      const {return false;}
-  virtual bool is_constant() const {return false;}
+  virtual bool is_leaf()     const { return false; }
+  virtual bool is_var()      const { return false; }
+  virtual bool is_constant() const { return false; }
   virtual std::string to_verilog() const;
 
-  VExprAst(voperator op, const VExprAstPtrVec & c) : op_(op) , child_(c) {}
+  VExprAst(voperator op, const VExprAstPtrVec & c, 
+    const std::vector<int> & parameter, const std::vector<std::string> & str_parameter) : 
+        op_(op) , child_(c), parameter_(parameter), str_parameter_(str_parameter)  {}
 
 protected:
-  voperator op_;
-  VExprAstPtrVec child_;
-  std::vector<int> parameter_;
-  std::vector<std::string> str_parameter_;
+  // unmutable
+  const voperator op_;
+  const VExprAstPtrVec child_;
+  const std::vector<int> parameter_;
+  const std::vector<std::string> str_parameter_;
+  
   InternalInfoPtr annotate_;
 };
 
@@ -165,12 +171,15 @@ public:
   
   virtual bool is_leaf()     const override {return true;}
   virtual bool is_constant() const override {return true;}
+  
+  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const;
+  
   std::tuple<int, int, std::string> get_constant() const {return std::make_tuple(base_, width_, lit_);}
 
   virtual std::string to_verilog() const override;
 
   VExprAstConstant(int base, int width, const std::string & lit) :
-     VExprAst(voperator::MK_CONST, {}), base_(base), width_(width), lit_ (lit) {}
+     VExprAst(voperator::MK_CONST, {}, {}, {}), base_(base), width_(width), lit_ (lit) {}
 
 protected:
   int base_; // 0 (real number) , 2,4,8, 10,16
@@ -186,12 +195,15 @@ public:
   
   virtual bool is_leaf() const override {return true;}
   virtual bool is_var()  const override {return true;}
+  
+  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const;
+  
   std::pair<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
   
   virtual std::string to_verilog() const override;
 
   VExprAstVar(const std::string & name, bool is_special_name) : 
-    VExprAst(voperator::MK_VAR, {}), 
+    VExprAst(voperator::MK_VAR, {}, {}, {}), 
     name_(name), is_special_name_(is_special_name) {}
 
 protected:

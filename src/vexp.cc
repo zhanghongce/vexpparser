@@ -5,6 +5,25 @@
 
 namespace verilog_expr {
 
+// warning : will not make copy of annotation!
+VExprAst::VExprAstPtr VExprAst::MakeCopyWithNewChild(const VExprAstPtrVec& in) const {
+  auto ret = std::make_shared<VExprAst>(op_ , in, parameter_, str_parameter_);
+  return ret;
+}
+VExprAst::VExprAstPtr VExprAstVar::MakeCopyWithNewChild(const VExprAstPtrVec& in) const {
+  assert(in.empty());
+  if(is_special_name_)
+    return MakeSpecialName(name_);
+  return MakeVar(name_);
+}
+
+VExprAst::VExprAstPtr VExprAstConstant::MakeCopyWithNewChild(const VExprAstPtrVec& in) const {
+  assert(in.empty());
+  auto ret = MakeConstant(base_, width_, lit_);
+  return ret;
+}
+
+
 VExprAst::VExprAstPtr VExprAst::MakeConstant(int base, int width, const std::string & lit) {
   return std::make_shared<VExprAstConstant>(base, width, lit);
 }
@@ -30,7 +49,8 @@ VExprAst::VExprAstPtr VExprAst::MakeUnaryAst(voperator op, const VExprAstPtr & c
       op == voperator::B_EQU      // "^~"|"~^"
     ) {
     VExprAstPtrVec tmp({c});
-    return std::make_shared<VExprAst>(op , tmp);
+    return std::make_shared<VExprAst>(op , tmp,
+      std::vector<int>({}), std::vector<std::string>({}) );
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeUnaryAst");
   return NULL;
@@ -41,9 +61,7 @@ VExprAst::VExprAstPtr VExprAst::MakeUnaryParamAst(voperator op, const VExprAstPt
   if (op == voperator::DELAY     // "^~"|"~^"
     ) {
     VExprAstPtrVec tmp({c});
-    auto tmpptr = std::make_shared<VExprAst>(op , tmp);
-    tmpptr->parameter_ = param; // copy parameters
-    tmpptr->str_parameter_ = sparam;
+    auto tmpptr = std::make_shared<VExprAst>(op , tmp, param, sparam);
     return tmpptr;
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeUnaryParamAst");
@@ -55,9 +73,7 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryParamAst(voperator op, const VExprAstP
   if (op == voperator::DELAY     // "^~"|"~^"
     ) {
     VExprAstPtrVec tmp({c1, c2});
-    auto tmpptr = std::make_shared<VExprAst>(op , tmp);
-    tmpptr->parameter_ = param; // copy parameters
-    tmpptr->str_parameter_ = sparam;
+    auto tmpptr = std::make_shared<VExprAst>(op , tmp, param, sparam);
     return tmpptr;
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeUnaryParamAst");
@@ -99,7 +115,8 @@ VExprAst::VExprAstPtr VExprAst::MakeBinaryAst(voperator op, const VExprAstPtr & 
       op == voperator::AT
     ) {
     VExprAstPtrVec tmp({c1,c2});
-    return std::make_shared<VExprAst>(op , tmp);
+    return std::make_shared<VExprAst>(op , tmp,
+      std::vector<int>({}), std::vector<std::string>({}) );
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeBinaryAst");
   return NULL;
@@ -114,7 +131,8 @@ VExprAst::VExprAstPtr VExprAst::MakeTernaryAst(voperator op, const VExprAstPtr &
       op == voperator::STORE_OP
     ) {
     VExprAstPtrVec tmp({c1,c2,c3});
-    return std::make_shared<VExprAst>(op , tmp);
+    return std::make_shared<VExprAst>(op , tmp,
+      std::vector<int>({}), std::vector<std::string>({}) );
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeTernaryAst");
   return NULL;
@@ -125,7 +143,8 @@ VExprAst::VExprAstPtr VExprAst::MakeNaryAst(voperator op, const VExprAstPtrVec &
   if (op == voperator::FUNCTION_APP || 
       op == voperator::CONCAT
     ) {
-    return std::make_shared<VExprAst>(op , children);
+    return std::make_shared<VExprAst>(op , children,
+      std::vector<int>({}), std::vector<std::string>({}) );
   }
   throw VexpException(ExceptionCause::OpNaryNotMatched, "N-ary not matched in MakeNaryAst");
   return NULL;
