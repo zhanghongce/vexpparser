@@ -77,6 +77,7 @@ target_include_directories(${VEXP_LIBRARY_NAME}
   PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${BINARY_DIR}>
+    ${FLEXLEXER_INCLUDE_PATH}
 )
 
 # ------------------------------------------------------------------------
