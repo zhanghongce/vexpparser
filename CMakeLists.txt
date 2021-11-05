@@ -27,9 +27,6 @@ set(VEXP_EXECUTABLE_NAME "${VEXP_LIBRARY_NAME}exec")
 add_subdirectory(src)
 include_directories(${VEXP_PARSER_INCLUDE_INSTALL_DIR})
 
-if(${FLEXLEXER_INCLUDE_PATH})
-  include_directories(${FLEXLEXER_INCLUDE_PATH})
-endif()
 
 # ------------------------------------------------------------------------
 # install

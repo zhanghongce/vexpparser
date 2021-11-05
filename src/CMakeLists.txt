@@ -15,6 +15,10 @@ set(BISON_OUTPUT_HEADER vexp_parser.hh)
 
 # ------------------------------------------------------------------------
 
+if(${FLEXLEXER_INCLUDE_PATH})
+  message(STATUS "Flex include path:   ${FLEXLEXER_INCLUDE_PATH}")
+  include_directories(${FLEXLEXER_INCLUDE_PATH})
+endif()
 
 message(STATUS "Parser Build Flags Debug:   ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "Parser Link Flags Debug:    ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
