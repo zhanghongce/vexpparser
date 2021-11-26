@@ -20,7 +20,9 @@ enum class ExceptionCause {
   UntranslatedSmtlib2,
   UnknownNumberVlgTranslation,
   UnknownNumberSmtTranslation,
-  TypeMismatch
+  TypeMismatch,
+  ExpectBvXType,
+  StrToInvFailed
 };
 
 class VexpException {
@@ -80,7 +82,9 @@ enum class voperator {
   MK_VAR,
 
   /*Add new ones here*/
-  DELAY
+  DELAY,
+  FORALL, // $forall(v:bvX,  expr )
+  EXIST   // $exist(v:bvX, expr)
 
    };
 
@@ -122,6 +126,9 @@ public:
   static VExprAstPtr MakeUnaryAst(voperator op, const VExprAstPtr & c);
   static VExprAstPtr MakeUnaryParamAst(voperator op, const VExprAstPtr & c, const std::vector<int> & param, const std::vector<std::string> & sparam);
   static VExprAstPtr MakeBinaryParamAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2, const std::vector<int> & param, const std::vector<std::string> & sparam);
+
+  static VExprAst::VExprAstPtr MakeQuantifiedExpr(voperator op, 
+      const std::string & quantified_name, unsigned width, const VExprAstPtr & quantified_expr);
   
   
   static VExprAstPtr MakeBinaryAst(voperator op, const VExprAstPtr & c1, const VExprAstPtr & c2);
@@ -212,6 +219,7 @@ protected:
 };
 
 int width_to_int(const std::string &); // convert width to int
+int extract_width(const std::string &); // bvX -> X
 
 // this class is only used in AST construction
 struct SuffixOp {
