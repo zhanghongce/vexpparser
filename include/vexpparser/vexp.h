@@ -179,7 +179,7 @@ public:
   virtual bool is_leaf()     const override {return true;}
   virtual bool is_constant() const override {return true;}
   
-  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const;
+  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const override;
   
   std::tuple<int, int, std::string> get_constant() const {return std::make_tuple(base_, width_, lit_);}
 
@@ -203,7 +203,7 @@ public:
   virtual bool is_leaf() const override {return true;}
   virtual bool is_var()  const override {return true;}
   
-  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const;
+  virtual VExprAstPtr MakeCopyWithNewChild(const VExprAstPtrVec& in) const override;
   
   std::pair<std::string,bool> get_name() const {return std::make_pair(name_,is_special_name_);}
   
